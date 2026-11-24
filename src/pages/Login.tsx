@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+
+interface LoginApiResponse {
+  success?: boolean;
+  message?: string;
+  data?: {
+    accessToken?: string;
+    token?: string;
+    user?: {
+      id?: string;
+      name?: string;
+      email?: string;
+      role?: string;
+    };
+  };
+}
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const loginMutation = useLogin();
+  const { syncToken, refetchUser } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -50,25 +67,40 @@ const Login: React.FC = () => {
     }
 
     loginMutation.mutate(formData, {
-      onSuccess: (data) => {
-        toast.success("تم تسجيل الدخول")
-        data.user!.role === "ADMIN" ?
-          navigate('/admin') : data.user!.role === "SHOP_OWNER" ? navigate('/market') : ""
+      onSuccess: (response) => {
+        const res = response as unknown as LoginApiResponse;
+        const token = res.data?.accessToken ?? res.data?.token;
+        const role = res.data?.user?.role?.toUpperCase();
+
+        if (token) {
+          syncToken(token);
+          refetchUser();
+        }
+
+        toast.success('تم تسجيل الدخول');
+
+        if (role === 'ADMIN') {
+          navigate('/admin', { replace: true });
+        } else if (role === 'SHOP_OWNER') {
+          navigate('/market', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
       },
       onError: (error) => {
-        toast.error(error.message)
-      }
+        toast.error(error.message);
+      },
     });
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-center">
-      <h1 className="text-3xl md:text-4xl font-bold text-[#6b1d37] mb-8">
+    <div className="flex flex-col items-center justify-center text-center bg-surface text-brand-charcoal">
+      <h1 className="text-3xl md:text-4xl font-bold text-brand mb-8">
         تسجيل الدخول
       </h1>
 
       {loginMutation.isError && (
-        <div className="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded-full">
+        <div className="w-full mb-4 p-3 bg-brand-rose/15 border border-brand-wine text-brand-deep text-sm rounded-full">
           حدث خطأ أثناء تسجيل الدخول، يُرجى التأكد من البيانات.
         </div>
       )}
@@ -81,11 +113,16 @@ const Login: React.FC = () => {
             placeholder="البريد الإلكتروني"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-6 py-3.5 bg-gray-200/70 border ${errors.email ? 'border-red-500' : 'border-transparent'
-              } rounded-full text-center text-gray-800 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-[#6b1d37] transition-all`}
+            className={`w-full px-6 py-3.5 bg-brand-neutral/60 border ${
+              errors.email ? 'border-brand-wine' : 'border-transparent'
+            } rounded-full text-center text-brand-ink placeholder-brand-charcoal/80 focus:outline-none focus:bg-surface focus:border-brand transition-all`}
             disabled={loginMutation.isPending}
           />
-          {errors.email && <span className="text-red-500 text-xs mt-1 block px-4">{errors.email}</span>}
+          {errors.email && (
+            <span className="text-brand-wine text-xs mt-1 block px-4">
+              {errors.email}
+            </span>
+          )}
         </div>
 
         <div className="w-full">
@@ -96,14 +133,15 @@ const Login: React.FC = () => {
               placeholder="كلمة السر"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-6 py-3.5 bg-white border-2 ${errors.password ? 'border-red-500' : 'border-[#6b1d37]/40'
-                } rounded-full text-center text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6b1d37] transition-all`}
+              className={`w-full px-6 py-3.5 bg-surface border-2 ${
+                errors.password ? 'border-brand-wine' : 'border-brand/40'
+              } rounded-full text-center text-brand-ink placeholder-brand-charcoal/80 focus:outline-none focus:border-brand transition-all`}
               disabled={loginMutation.isPending}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#6b1d37] focus:outline-none"
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-charcoal hover:text-brand focus:outline-none cursor-pointer"
             >
               {showPassword ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,11 +155,15 @@ const Login: React.FC = () => {
               )}
             </button>
           </div>
-          {errors.password && <span className="text-red-500 text-xs mt-1 block px-4">{errors.password}</span>}
+          {errors.password && (
+            <span className="text-brand-wine text-xs mt-1 block px-4">
+              {errors.password}
+            </span>
+          )}
         </div>
 
         <div className="pt-1">
-          <a href="#forgot" className="text-sm text-gray-600 hover:text-[#6b1d37] transition-colors">
+          <a href="#forgot" className="text-sm text-brand-charcoal hover:text-brand transition-colors">
             هل نسيت كلمة السر
           </a>
         </div>
@@ -129,10 +171,10 @@ const Login: React.FC = () => {
         <button
           type="submit"
           disabled={loginMutation.isPending}
-          className="w-full py-3.5 bg-[#6b1d37] hover:bg-[#52162a] text-white font-semibold rounded-full shadow-md transition-all duration-200 text-lg mt-2 flex items-center justify-center disabled:opacity-70"
+          className="w-full py-3.5 bg-brand hover:bg-brand-dark text-surface font-semibold rounded-full shadow-md transition-all duration-200 text-lg mt-2 flex items-center justify-center disabled:opacity-70 cursor-pointer"
         >
           {loginMutation.isPending ? (
-            <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-6 w-6 text-surface" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -142,20 +184,31 @@ const Login: React.FC = () => {
         </button>
       </form>
 
-      {/* رابط إنشاء حساب */}
-      {/* <div className="mt-6 text-sm text-gray-600">
+      <div className="mt-6 text-sm text-brand-charcoal">
         ليس لديك حساب ؟{' '}
-        <button onClick={() => navigate('/signup')} className="text-[#9e2b52] font-bold hover:underline bg-transparent border-none cursor-pointer">
+        <button
+          type="button"
+          onClick={() => navigate('/signup')}
+          className="text-brand-plum font-bold hover:text-brand hover:underline bg-transparent border-none cursor-pointer"
+        >
           سجل الان
         </button>
-      </div> */}
-
-      {/* زر تسجيل الدخول عبر جوجل */}
+      </div>
+      <div className="mt-3 text-sm text-brand-charcoal">
+        هل ترغب بفتح متجر؟{' '}
+        <button
+          type="button"
+          onClick={() => navigate('/create-shop')}
+          className="text-brand font-bold hover:underline bg-transparent border-none cursor-pointer"
+        >
+          انضم كصاحب متجر
+        </button>
+      </div>
       <div className="mt-4">
         <button
           type="button"
           onClick={() => alert('ميزة تسجيل الدخول عبر جوجل قيد التفعيل')}
-          className="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors py-2 px-4 rounded-full border border-gray-200 hover:bg-gray-50 cursor-pointer"
+          className="flex items-center justify-center gap-2 text-sm text-brand-charcoal hover:text-brand-ink transition-colors py-2 px-4 rounded-full border border-brand-neutral hover:bg-brand-mauve/10 cursor-pointer"
         >
           <span>أو قم بالتسجيل عن طريق غوغل</span>
           <svg className="w-5 h-5" viewBox="0 0 24 24">

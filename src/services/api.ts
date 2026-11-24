@@ -10,13 +10,18 @@ export const api = axios.create({
   },
 });
 
-// Interceptor لإضافة Token للتكليفات المحمية (مثل me / logout / change-password)
+// Interceptor لإضافة Token ومعالجة FormData للطلبات المحمية
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
