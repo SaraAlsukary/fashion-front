@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
     MapPin,
     Heart,
@@ -8,8 +9,14 @@ import {
     SlidersHorizontal,
     ChevronDown,
     Check,
+    User,
+    LogIn,
+    LogOut,
+    LayoutDashboard,
 } from 'lucide-react';
 import type { HomeCategory } from '../services/homeService';
+import { useAuth } from '../context/AuthContext';
+import { useStorefrontCartFav } from '../context/StorefrontCartFavContext';
 
 export interface StorefrontHeaderProps {
     locationLabel?: string;
@@ -25,6 +32,7 @@ export interface StorefrontHeaderProps {
     onChangePriceSort?: (sort: 'none' | 'asc' | 'desc') => void;
     favoriteCount?: number;
     bagCount?: number;
+    loginPath?: string;
 }
 
 const categoryArabicLabels: Record<string, string> = {
@@ -51,12 +59,34 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
     onSelectSize,
     priceSort = 'none',
     onChangePriceSort,
-    favoriteCount = 0,
-    bagCount = 0,
+    loginPath = '/login',
 }) => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const { user, role, isAuthenticated, isLoading, logout } = useAuth();
+    const { favorites, totalBagCount } = useStorefrontCartFav();
+
+    const resolvedFavoriteCount = favorites.length;
+    const resolvedBagCount = totalBagCount;
+
     const [filterOpen, setFilterOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(event.target as Node)
+            ) {
+                setUserMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleLocationClick = () => {
         if (onToggleLocation) {
@@ -64,10 +94,38 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
         }
     };
 
+    const getDashboardRoute = () => {
+        if (role === 'ADMIN') return '/admin';
+        if (role === 'SHOP_OWNER') return '/market';
+        return '/profile';
+    };
+
+    const getDashboardLabel = () => {
+        if (role === 'ADMIN') return 'لوحة الإدارة';
+        if (role === 'SHOP_OWNER') return 'لوحة المتجر';
+        return 'حسابي';
+    };
+
+    const handleLogout = async () => {
+        if (isLoggingOut) return;
+        setIsLoggingOut(true);
+        try {
+            await logout();
+            setUserMenuOpen(false);
+            toast.success('تم تسجيل الخروج بنجاح');
+        } catch {
+            toast.error('تعذر تسجيل الخروج، حاول مرة أخرى');
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
+
+    const displayName = user?.name || user?.email || 'المستخدم';
+
     return (
         <header className="relative bg-gradient-to-b from-brand-plum to-brand-rose text-surface pt-4 pb-10 px-4 md:px-10">
             <div className="max-w-6xl mx-auto space-y-4">
-                {/* الصف العلوي: الموقع + روابط سطح المكتب + أيقونات المفضلة والسلة */}
+                {/* الصف العلوي: الموقع + روابط سطح المكتب + المفضلة والسلة وحالة المستخدم */}
                 <div className="flex items-center justify-between gap-3">
                     {/* الموقع */}
                     <button
@@ -88,9 +146,9 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                     {/* روابط التنقل لسطح المكتب */}
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-surface/95">
                         <Link
-                            to="/home"
+                            to="/"
                             className={
-                                pathname === '/home' || pathname === '/'
+                                pathname === '/'
                                     ? 'font-bold underline underline-offset-8'
                                     : 'hover:text-surface/80 transition-colors'
                             }
@@ -129,7 +187,7 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                         </Link>
                     </nav>
 
-                    {/* أيقونات القلب والسلة */}
+                    {/* أيقونات القلب والسلة + زر تسجيل الدخول أو أيقونة المستخدم */}
                     <div className="flex items-center gap-2.5">
                         <button
                             type="button"
@@ -137,10 +195,16 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                             aria-label="المفضلة"
                             className="relative w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface/90 hover:bg-surface text-brand-rose shadow-md flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
                         >
-                            <Heart className="w-4 h-4 md:w-5 md:h-5 fill-brand-rose/20" />
-                            {favoriteCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand text-surface text-[10px] font-bold flex items-center justify-center">
-                                    {favoriteCount}
+                            <Heart
+                                className={`w-4 h-4 md:w-5 md:h-5 ${
+                                    resolvedFavoriteCount > 0
+                                        ? 'fill-brand-rose'
+                                        : 'fill-brand-rose/20'
+                                }`}
+                            />
+                            {resolvedFavoriteCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-brand text-surface text-[10px] font-bold flex items-center justify-center">
+                                    {resolvedFavoriteCount}
                                 </span>
                             )}
                         </button>
@@ -152,12 +216,75 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                             className="relative w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface/90 hover:bg-surface text-brand-rose shadow-md flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
                         >
                             <ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />
-                            {bagCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand text-surface text-[10px] font-bold flex items-center justify-center">
-                                    {bagCount}
+                            {resolvedBagCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-brand text-surface text-[10px] font-bold flex items-center justify-center">
+                                    {resolvedBagCount}
                                 </span>
                             )}
                         </button>
+
+                        {isLoading ? (
+                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface/25 animate-pulse shrink-0" />
+                        ) : isAuthenticated ? (
+                            <div ref={userMenuRef} className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setUserMenuOpen((prev) => !prev)}
+                                    aria-label="حساب المستخدم"
+                                    className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface/95 hover:bg-surface text-brand shadow-md flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+                                >
+                                    <User className="w-4 h-4 md:w-5 md:h-5 stroke-[2.2]" />
+                                </button>
+
+                                {userMenuOpen && (
+                                    <div className="absolute left-0 top-12 z-50 w-56 bg-surface text-brand-charcoal rounded-2xl shadow-xl border border-brand-neutral/60 p-2 space-y-1">
+                                        <div className="px-3 py-2 border-b border-gray-100 text-right">
+                                            <p className="text-xs font-bold text-gray-900 truncate">
+                                                {displayName}
+                                            </p>
+                                            {user?.email && (
+                                                <p className="text-[11px] text-gray-500 truncate" dir="ltr">
+                                                    {user.email}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setUserMenuOpen(false);
+                                                navigate(getDashboardRoute());
+                                            }}
+                                            className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-gray-800 hover:bg-surface-muted flex items-center gap-2 text-right transition-colors cursor-pointer"
+                                        >
+                                            <LayoutDashboard className="w-4 h-4 text-brand shrink-0" />
+                                            <span>{getDashboardLabel()}</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            disabled={isLoggingOut}
+                                            className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 text-right transition-colors cursor-pointer disabled:opacity-60"
+                                        >
+                                            <LogOut className="w-4 h-4 shrink-0" />
+                                            <span>
+                                                {isLoggingOut ? 'جارٍ الخروج...' : 'تسجيل الخروج'}
+                                            </span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => navigate(loginPath)}
+                                className="h-9 md:h-10 px-3.5 md:px-4 rounded-full bg-surface hover:bg-surface/95 text-brand text-xs md:text-sm font-bold shadow-md inline-flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shrink-0"
+                            >
+                                <LogIn className="w-4 h-4 shrink-0" />
+                                <span>تسجيل الدخول</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -201,10 +328,11 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                                                         onClick={() =>
                                                             onSelectCategory(active ? '' : cat.slug)
                                                         }
-                                                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${active
+                                                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                                                            active
                                                                 ? 'bg-brand text-surface'
                                                                 : 'bg-surface-muted text-brand-charcoal hover:bg-brand-neutral/60'
-                                                            }`}
+                                                        }`}
                                                     >
                                                         {categoryArabicLabels[cat.slug] ?? cat.name}
                                                     </button>
@@ -224,10 +352,11 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                                                     key={sz}
                                                     type="button"
                                                     onClick={() => onSelectSize(active ? '' : sz)}
-                                                    className={`py-1 rounded border text-[11px] font-semibold cursor-pointer ${active
+                                                    className={`py-1 rounded border text-[11px] font-semibold cursor-pointer ${
+                                                        active
                                                             ? 'bg-brand text-surface border-brand'
                                                             : 'border-brand-neutral text-brand-charcoal hover:border-brand'
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {sz}
                                                 </button>
@@ -257,10 +386,11 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
                                                 >
                                                     <span>{opt.label}</span>
                                                     <span
-                                                        className={`w-4 h-4 rounded flex items-center justify-center border ${checked
+                                                        className={`w-4 h-4 rounded flex items-center justify-center border ${
+                                                            checked
                                                                 ? 'bg-brand border-brand text-surface'
                                                                 : 'border-brand-neutral'
-                                                            }`}
+                                                        }`}
                                                     >
                                                         {checked && <Check className="w-3 h-3" />}
                                                     </span>

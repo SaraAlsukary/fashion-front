@@ -271,7 +271,7 @@ const ProductDetails: React.FC = () => {
           تعذر العثور على تفاصيل هذا المنتج
         </p>
         <Link
-          to="/home"
+          to="/"
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-brand text-surface text-xs md:text-sm font-semibold"
         >
           العودة إلى الرئيسية
@@ -294,7 +294,7 @@ const ProductDetails: React.FC = () => {
         aria-label="مسار التنقل"
         className="flex flex-wrap items-center gap-1.5 text-xs text-brand-charcoal"
       >
-        <Link to="/home" className="hover:text-brand transition-colors">
+        <Link to="/" className="hover:text-brand transition-colors">
           الرئيسية
         </Link>
         <ChevronLeft className="w-3.5 h-3.5" />

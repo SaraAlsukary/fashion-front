@@ -275,7 +275,7 @@ const StorefrontProducts: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto no-scrollbar py-1.5">
+        <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto no-scrollbar py-1.5 px-1">
           <button
             type="button"
             onClick={() => {

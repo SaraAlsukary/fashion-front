@@ -170,10 +170,10 @@ export const StorefrontCartFavProvider: React.FC<{
       options?.price ??
       Number(
         product.sale_price ??
-          firstVariant?.sale_price ??
-          product.price ??
-          firstVariant?.price ??
-          0
+        firstVariant?.sale_price ??
+        product.price ??
+        firstVariant?.price ??
+        0
       );
 
     const shopId = String(product.shop?.id ?? 'default-shop');
@@ -241,7 +241,23 @@ export const StorefrontCartFavProvider: React.FC<{
   };
 
   const totalBagCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  useEffect(() => {
+    try {
+      localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(favorites));
+      window.dispatchEvent(new Event('storefront-cart-fav-updated'));
+    } catch {
+      // تجاهل أخطاء التخزين
+    }
+  }, [favorites]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+      window.dispatchEvent(new Event('storefront-cart-fav-updated'));
+    } catch {
+      // تجاهل أخطاء التخزين
+    }
+  }, [cartItems]);
   return (
     <StorefrontCartFavContext.Provider
       value={{

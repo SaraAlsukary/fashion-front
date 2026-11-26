@@ -25,7 +25,15 @@ const Register = lazy(() => import('./pages/Register'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Products = lazy(() => import('./pages/Products'));
-const CreateShop = lazy(() => import('./pages/market/CreateShop'));
+const StorefrontHome = lazy(() => import('./pages/Home'));
+const StorefrontFavorites = lazy(() => import('./pages/Favorites'));
+const StorefrontCart = lazy(() => import('./pages/Cart'));
+const Shops = lazy(() => import('./pages/Shops'));
+const ShopDetails = lazy(() => import('./pages/ShopDetails'));
+const Offers = lazy(() => import('./pages/Offers'));
+
+
+
 
 // Admin
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
@@ -39,9 +47,7 @@ const Sizes = lazy(() => import('./pages/admin/Sizes'));
 const Reports = lazy(() => import('./pages/admin/Reports'));
 const Subscriptions = lazy(() => import('./pages/admin/Subscriptions'));
 const Settings = lazy(() => import('./pages/admin/Settings'));
-const StorefrontHome = lazy(() => import('./pages/Home'));
-const StorefrontFavorites = lazy(() => import('./pages/Favorites'));
-const StorefrontCart = lazy(() => import('./pages/Cart'));
+
 
 // Market
 const MarketReviews = lazy(() => import('./pages/market/Reviews'));
@@ -52,6 +58,7 @@ const MarketOffers = lazy(() => import('./pages/market/Offers'));
 const MarketOrders = lazy(() => import('./pages/market/Orders'));
 const MarketProducts = lazy(() => import('./pages/market/Products'));
 const MarketSubscriptions = lazy(() => import('./pages/market/Subscriptions'));
+const CreateShop = lazy(() => import('./pages/market/CreateShop'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[300px] w-full">
@@ -116,6 +123,23 @@ const router = createBrowserRouter([
       path: 'products/:id',
       element: <ProductDetails />
     },
+    {
+      path: 'shops',
+      element: (
+        <WithSuspense>
+          <Shops />
+        </WithSuspense>
+      ),
+    },
+    {
+      path: 'shops/:shopId',
+      element: (
+        <WithSuspense>
+          <ShopDetails />
+        </WithSuspense>
+      ),
+    },
+
     // داخل createBrowserRouter تحت MainLayout:
     {
       path: 'favorites',
@@ -132,7 +156,13 @@ const router = createBrowserRouter([
           <StorefrontCart />
         </WithSuspense>
       ),
-    },]
+    },
+    {
+      path: "offers",
+      element: <WithSuspense>
+        <Offers />
+      </WithSuspense>
+    }]
   },
   {
     path: '/signup',

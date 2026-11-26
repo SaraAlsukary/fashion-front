@@ -34,7 +34,7 @@ const navItems: NavItem[] = [
   { label: 'الطلبات', to: '/admin/orders', icon: ClipboardList },
   { label: 'الفئات', to: '/admin/categories', icon: FolderOpen },
   { label: 'العلامات التجارية', to: '/admin/brands', icon: Tag },
-  { label: 'الألوان', to: '/admin/colors', icon: Palette },
+  // { label: 'الألوان', to: '/admin/colors', icon: Palette },
   { label: 'المقاسات', to: '/admin/sizes', icon: Ruler },
   { label: 'الإعدادات', to: '/admin/settings', icon: Settings },
   { label: 'الدفع', to: '/admin/payments', icon: CreditCard },
@@ -103,16 +103,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               key={item.to}
               to={item.to}
               onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-3 pr-5 pl-4 py-2 text-sm font-medium transition-all ${
-                isActive
+              className={`flex items-center gap-3 pr-5 pl-4 py-2 text-sm font-medium transition-all ${isActive
                   ? 'bg-surface text-brand rounded-l-full font-bold shadow-xs'
                   : 'text-surface/95 hover:bg-brand-dark/70 rounded-l-full'
-              }`}
+                }`}
             >
               <Icon
-                className={`w-[18px] h-[18px] shrink-0 ${
-                  isActive ? 'text-brand' : 'text-surface'
-                }`}
+                className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-brand' : 'text-surface'
+                  }`}
               />
               <span className="truncate">{item.label}</span>
             </Link>

@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Eye,
   User,
+  RefreshCw,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -20,6 +21,8 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
+import { useAdmin } from '../../hooks/admin/useAdmin';
+import { type AdminOrderItem, type DashboardOverviewData } from '../../services/admin/AdminService';
 
 type OrderStatus = 'قيد المعالجة' | 'تم الشحن' | 'معلق';
 
@@ -32,7 +35,7 @@ interface StatCard {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-interface OrderRow {
+export interface OrderRow {
   id: string;
   orderNumber: string;
   customerName: string;
@@ -46,85 +49,7 @@ interface SalesPoint {
   sales: number;
 }
 
-const initialStats: StatCard[] = [
-  {
-    id: 'users',
-    title: 'اجمالي المستخدمين',
-    value: '12 مستخدم',
-    change: '+3مستخدمين ↑',
-    comparison: 'مقارنة بالشهر الماضي',
-    icon: Users,
-  },
-  {
-    id: 'markets',
-    title: 'اجمالي المتاجر',
-    value: '24 متجر',
-    change: '+5 متاجر ↑',
-    comparison: 'مقارنة بالشهر الماضي',
-    icon: Store,
-  },
-  {
-    id: 'orders',
-    title: 'اجمالي الطلبات',
-    value: '200طلب',
-    change: '+65 طلب ↑',
-    comparison: 'مقارنة بالشهر الماضي',
-    icon: ClipboardList,
-  },
-  {
-    id: 'profit',
-    title: 'اجمالي الربح',
-    value: '12000 ل.س.ج',
-    change: '+6% ↑',
-    comparison: 'مقارنة بالشهر الماضي',
-    icon: CircleDollarSign,
-  },
-  {
-    id: 'subscriptions',
-    title: 'اجمالي الاشتراكات',
-    value: '50 اشتراك',
-    change: '+6% ↑',
-    comparison: 'مقارنة بالشهر الماضي',
-    icon: BadgePercent,
-  },
-  {
-    id: 'pending-markets',
-    title: 'المتاجر قيد الانتظار',
-    value: '12 متجر',
-    change: '+3متاجر ↑',
-    comparison: 'مقارنة بالشهر الماضي',
-    icon: Store,
-  },
-];
-
-const initialOrders: OrderRow[] = [
-  {
-    id: '1',
-    orderNumber: '#ord1001',
-    customerName: 'محمد محمد',
-    status: 'قيد المعالجة',
-    amount: '5000ل.س.ج',
-    date: '22/12/2026',
-  },
-  {
-    id: '2',
-    orderNumber: '#ord1001',
-    customerName: 'محمد محمد',
-    status: 'تم الشحن',
-    amount: '5000ل.س.ج',
-    date: '22/12/2026',
-  },
-  {
-    id: '3',
-    orderNumber: '#ord1001',
-    customerName: 'محمد محمد',
-    status: 'معلق',
-    amount: '5000ل.س.ج',
-    date: '22/12/2026',
-  },
-];
-
-const weeklySalesData: SalesPoint[] = [
+const fallbackWeeklySalesData: SalesPoint[] = [
   { day: 'الاحد', sales: 530 },
   { day: 'الاثنين', sales: 780 },
   { day: 'الثلاثاء', sales: 1220 },
@@ -140,6 +65,105 @@ const statusBadgeStyle: Record<OrderStatus, string> = {
   'معلق': 'bg-rose-100/90 text-rose-600',
 };
 
+function mapOrderStatus(rawStatus: string): OrderStatus {
+  const normalized = rawStatus.trim().toUpperCase();
+  if (normalized === 'DELIVERED' || normalized === 'COMPLETED' || normalized === 'SHIPPED') {
+    return 'تم الشحن';
+  }
+  if (normalized === 'PENDING' || normalized === 'ON_HOLD' || normalized === 'CANCELLED') {
+    return 'معلق';
+  }
+  return 'قيد المعالجة';
+}
+
+function formatAmount(amount: string | number): string {
+  const numeric = Number(amount);
+  const formatted = Number.isFinite(numeric) ? numeric.toLocaleString('ar-SY') : String(amount);
+  return `${formatted} ل.س.ج`;
+}
+
+function formatDateDisplay(rawDate: string): string {
+  if (!rawDate) return '—';
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) return rawDate;
+  return parsed.toLocaleDateString('ar-EG', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function buildStatCards(overview: DashboardOverviewData | null): StatCard[] {
+  const usersTotal = overview?.users?.total ?? 0;
+  const shopsTotal = overview?.shops?.total ?? 0;
+  const ordersTotal = overview?.orders?.total ?? 0;
+  const successfulPayments = overview?.financial?.successfulPayments ?? 0;
+  const subscriptionsTotal = overview?.subscriptions?.total ?? 0;
+  const pendingShops = overview?.shops?.pending ?? 0;
+
+  return [
+    {
+      id: 'users',
+      title: 'اجمالي المستخدمين',
+      value: `${usersTotal} مستخدم`,
+      change: `${overview?.users?.active ?? usersTotal} نشط ↑`,
+      comparison: `عملاء: ${overview?.users?.customers ?? 0} | متاجر: ${overview?.users?.shopOwners ?? 0}`,
+      icon: Users,
+    },
+    {
+      id: 'markets',
+      title: 'اجمالي المتاجر',
+      value: `${shopsTotal} متجر`,
+      change: `${overview?.shops?.approved ?? 0} معتمد ↑`,
+      comparison: 'مقارنة بالشهر الماضي',
+      icon: Store,
+    },
+    {
+      id: 'orders',
+      title: 'اجمالي الطلبات',
+      value: `${ordersTotal} طلب`,
+      change: `${overview?.orders?.completed ?? 0} مكتمل ↑`,
+      comparison: 'مقارنة بالشهر الماضي',
+      icon: ClipboardList,
+    },
+    {
+      id: 'profit',
+      title: 'اجمالي الربح',
+      value: formatAmount(successfulPayments),
+      change: `اشتراكات: ${overview?.financial?.subscriptionRevenue ?? 0} ↑`,
+      comparison: 'المدفوعات الناجحة',
+      icon: CircleDollarSign,
+    },
+    {
+      id: 'subscriptions',
+      title: 'اجمالي الاشتراكات',
+      value: `${subscriptionsTotal} اشتراك`,
+      change: `${overview?.subscriptions?.active ?? 0} نشط ↑`,
+      comparison: 'مقارنة بالشهر الماضي',
+      icon: BadgePercent,
+    },
+    {
+      id: 'pending-markets',
+      title: 'المتاجر قيد الانتظار',
+      value: `${pendingShops} متجر`,
+      change: `${pendingShops} بانتظار المراجعة`,
+      comparison: 'مقارنة بالشهر الماضي',
+      icon: Store,
+    },
+  ];
+}
+
+function toOrderRow(item: AdminOrderItem): OrderRow {
+  return {
+    id: item.id,
+    orderNumber: item.orderNumber,
+    customerName: item.customerName,
+    status: mapOrderStatus(item.status),
+    amount: formatAmount(item.amount),
+    date: formatDateDisplay(item.date),
+  };
+}
+
 interface DashboardProps {
   onViewOrder?: (order: OrderRow) => void;
 }
@@ -149,7 +173,59 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
   const [activePage, setActivePage] = useState<number>(1);
   const [selectedOrder, setSelectedOrder] = useState<OrderRow | null>(null);
 
-  const pages = useMemo(() => [1, 2, 3, 10], []);
+  const pageSize = 10;
+
+  const {
+    overview,
+    orders: rawOrders,
+    salesPoints,
+    totalOrders,
+    totalPages,
+    loading,
+    ordersLoading,
+    error,
+    refetch,
+  } = useAdmin({
+    page: activePage,
+    limit: pageSize,
+    salesDays: 7,
+  });
+
+  const statCards = useMemo(() => buildStatCards(overview), [overview]);
+
+  const orderRows = useMemo<OrderRow[]>(() => {
+    if (rawOrders.length > 0) {
+      return rawOrders.map(toOrderRow);
+    }
+
+    const fallbackRecent = overview?.recentActivity?.orders ?? [];
+    return fallbackRecent.map((o, idx) => ({
+      id: String(o.id ?? idx + 1),
+      orderNumber: o.order_number || o.orderNumber || `#ORD-${o.id ?? idx + 1}`,
+      customerName: o.customer_name || o.customerName || o.user?.name || 'عميل',
+      status: mapOrderStatus(o.status || 'PROCESSING'),
+      amount: formatAmount(o.total ?? o.amount ?? 0),
+      date: formatDateDisplay(o.created_at || o.createdAt || ''),
+    }));
+  }, [rawOrders, overview]);
+
+  const chartData = useMemo<SalesPoint[]>(() => {
+    if (!salesPoints.length) return fallbackWeeklySalesData;
+    return salesPoints.map((pt) => ({
+      day: pt.label || formatDateDisplay(pt.label),
+      sales: pt.sales,
+    }));
+  }, [salesPoints]);
+
+  const pages = useMemo(() => {
+    if (totalPages <= 4) {
+      return Array.from({ length: totalPages }, (_, idx) => idx + 1);
+    }
+    const set = new Set<number>([1, activePage, Math.min(totalPages, activePage + 1), totalPages]);
+    return Array.from(set)
+      .filter((p) => p >= 1 && p <= totalPages)
+      .sort((a, b) => a - b);
+  }, [totalPages, activePage]);
 
   const scrollStats = (direction: 'left' | 'right') => {
     if (!statsContainerRef.current) return;
@@ -165,12 +241,29 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
   return (
     <div className="space-y-6">
       {/* العنوان الفرعي */}
-      <div>
-        <h1 className="text-lg md:text-xl font-bold text-gray-900">لوحة التحكم</h1>
-        <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-          نظرة عامة عن المتجر
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg md:text-xl font-bold text-gray-900">لوحة التحكم</h1>
+          <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+            نظرة عامة عن المتجر
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void refetch()}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:border-brand hover:text-brand transition-colors cursor-pointer"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>تحديث</span>
+        </button>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs md:text-sm text-rose-700">
+          {error}
+        </div>
+      )}
 
       {/* شريط البطاقات الإحصائية */}
       <div className="relative flex items-center gap-1">
@@ -187,7 +280,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
           ref={statsContainerRef}
           className="flex-1 flex items-stretch gap-3 overflow-x-auto no-scrollbar py-1"
         >
-          {initialStats.map((stat) => {
+          {statCards.map((stat) => {
             const Icon = stat.icon;
             return (
               <div
@@ -202,7 +295,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
                 </div>
 
                 <div className="text-xs font-bold text-gray-900 mb-1">
-                  {stat.value}
+                  {loading ? '...' : stat.value}
                 </div>
 
                 <div className="flex items-center justify-between gap-1 text-[10px]">
@@ -241,45 +334,58 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200/80 text-xs md:text-sm text-gray-700">
-              {initialOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-surface/80 transition-colors"
-                >
-                  <td className="py-3 px-4">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenOrder(order)}
-                      aria-label={`معاينة منتجات الطلب ${order.orderNumber}`}
-                      className="inline-flex items-center justify-center text-gray-800 hover:text-brand transition-colors cursor-pointer"
-                    >
-                      <Eye className="w-5 h-5" />
-                    </button>
-                  </td>
-                  <td className="py-3 px-4 font-medium">{order.date}</td>
-                  <td className="py-3 px-4 font-medium">{order.amount}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`inline-block px-3.5 py-1 rounded-md text-xs font-semibold ${
-                        statusBadgeStyle[order.status]
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="inline-flex items-center justify-center gap-2">
-                      <span>{order.customerName}</span>
-                      <span className="w-5 h-5 rounded-full border border-gray-500 inline-flex items-center justify-center">
-                        <User className="w-3 h-3 text-gray-600" />
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 font-medium" dir="ltr">
-                    {order.orderNumber}
+              {ordersLoading ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-gray-500">
+                    جارٍ تحميل الطلبات...
                   </td>
                 </tr>
-              ))}
+              ) : orderRows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-gray-500">
+                    لا توجد طلبات متاحة حالياً
+                  </td>
+                </tr>
+              ) : (
+                orderRows.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="hover:bg-surface/80 transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenOrder(order)}
+                        aria-label={`معاينة منتجات الطلب ${order.orderNumber}`}
+                        className="inline-flex items-center justify-center text-gray-800 hover:text-brand transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                    </td>
+                    <td className="py-3 px-4 font-medium">{order.date}</td>
+                    <td className="py-3 px-4 font-medium">{order.amount}</td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`inline-block px-3.5 py-1 rounded-md text-xs font-semibold ${statusBadgeStyle[order.status]
+                          }`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="inline-flex items-center justify-center gap-2">
+                        <span>{order.customerName}</span>
+                        <span className="w-5 h-5 rounded-full border border-gray-500 inline-flex items-center justify-center">
+                          <User className="w-3 h-3 text-gray-600" />
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-medium" dir="ltr">
+                      {order.orderNumber}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -302,7 +408,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
         <div className="h-64 w-full" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={weeklySalesData}
+              data={chartData}
               margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
             >
               <defs>
@@ -324,8 +430,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
                 tickLine={false}
               />
               <YAxis
-                ticks={[200, 400, 550, 1000, 1250]}
-                domain={[150, 1700]}
                 tick={{ fill: '#374151', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
@@ -366,9 +470,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
         <div className="flex items-center gap-1.5" dir="ltr">
           <button
             type="button"
-            onClick={() => setActivePage((p) => Math.min(10, p + 1))}
+            onClick={() => setActivePage((p) => Math.min(totalPages, p + 1))}
+            disabled={activePage >= totalPages}
             aria-label="الصفحة التالية"
-            className="w-8 h-8 rounded-md border border-gray-300 flex items-center justify-center hover:border-brand hover:text-brand transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-md border border-gray-300 flex items-center justify-center hover:border-brand hover:text-brand disabled:opacity-40 transition-colors cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -380,11 +485,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
                 key={page}
                 type="button"
                 onClick={() => setActivePage(page)}
-                className={`w-8 h-8 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${
-                  isCurrent
-                    ? 'bg-brand text-white border-brand'
-                    : 'bg-surface text-gray-800 border-gray-300 hover:border-brand'
-                }`}
+                className={`w-8 h-8 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${isCurrent
+                  ? 'bg-brand text-white border-brand'
+                  : 'bg-surface text-gray-800 border-gray-300 hover:border-brand'
+                  }`}
               >
                 {page}
               </button>
@@ -394,14 +498,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewOrder }) => {
           <button
             type="button"
             onClick={() => setActivePage((p) => Math.max(1, p - 1))}
+            disabled={activePage <= 1}
             aria-label="الصفحة السابقة"
-            className="w-8 h-8 rounded-md border border-gray-300 flex items-center justify-center hover:border-brand hover:text-brand transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-md border border-gray-300 flex items-center justify-center hover:border-brand hover:text-brand disabled:opacity-40 transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="text-gray-700 font-medium">عرض 1 من 17</div>
+        <div className="text-gray-700 font-medium">
+          عرض {orderRows.length} من {totalOrders || orderRows.length}
+        </div>
       </div>
 
       {selectedOrder && (

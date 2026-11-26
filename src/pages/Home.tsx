@@ -1,7 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Heart, ChevronLeft, Sparkles, ArrowLeft } from 'lucide-react';
+import {
+  Heart,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  ArrowLeft,
+  LayoutGrid,
+} from 'lucide-react';
 import { useStorefrontContext } from '../layout/MainLayout';
 import { useStorefrontCartFav } from '../context/StorefrontCartFavContext';
 import {
@@ -9,6 +16,7 @@ import {
   useHomeFeaturedShops,
   useHomeOverview,
 } from '../hooks/useHomeContent';
+import { useCategories } from '../hooks/useCategories';
 import {
   resolveHomeMediaUrl,
   type HomeCategory,
@@ -70,6 +78,24 @@ const getProductPrimaryImage = (product: HomeProduct): string => {
   );
 };
 
+const extractCategoriesList = (raw: unknown): HomeCategory[] => {
+  if (Array.isArray(raw)) return raw as HomeCategory[];
+  if (!raw || typeof raw !== 'object') return [];
+  const obj = raw as {
+    data?: HomeCategory[] | { categories?: HomeCategory[]; items?: HomeCategory[] };
+    categories?: HomeCategory[];
+    items?: HomeCategory[];
+  };
+  if (Array.isArray(obj.data)) return obj.data;
+  if (Array.isArray(obj.categories)) return obj.categories;
+  if (Array.isArray(obj.items)) return obj.items;
+  if (obj.data && typeof obj.data === 'object') {
+    const nested = obj.data.categories ?? obj.data.items;
+    if (Array.isArray(nested)) return nested;
+  }
+  return [];
+};
+
 const StorefrontHome: React.FC = () => {
   const navigate = useNavigate();
   const outletCtx = useStorefrontContext();
@@ -79,7 +105,12 @@ const StorefrontHome: React.FC = () => {
   const { data: homeRes, isLoading } = useHomeOverview();
   const { data: shopsRes } = useHomeFeaturedShops();
   const { data: offersRes } = useHomeActiveOffers();
+  const { data: categoriesRes } = useCategories();
 
+  const categoriesScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const [isAutoScrollingCategories, setIsAutoScrollingCategories] =
+    useState(true);
   const [localSearch, setLocalSearch] = useState('');
   const [localCategory, setLocalCategory] = useState('');
   const [localSize, setLocalSize] = useState('');
@@ -97,7 +128,9 @@ const StorefrontHome: React.FC = () => {
   const priceSort = outletCtx ? outletCtx.priceSort : localSort;
 
   const homeData = homeRes?.data;
-  const categories: HomeCategory[] = homeData?.categories ?? [];
+  const hookCategories = extractCategoriesList(categoriesRes);
+  const categories: HomeCategory[] =
+    hookCategories.length > 0 ? hookCategories : homeData?.categories ?? [];
   const featuredProducts: HomeProduct[] = homeData?.featuredProducts ?? [];
   const newArrivals: HomeProduct[] = homeData?.newArrivals ?? [];
   const onSaleProducts: HomeProduct[] = homeData?.onSaleProducts ?? [];
@@ -111,6 +144,50 @@ const StorefrontHome: React.FC = () => {
       outletCtx.setCategories(categories);
     }
   }, [outletCtx, categories]);
+
+  useEffect(() => {
+    const el = categoriesScrollRef.current;
+    if (!el || !isAutoScrollingCategories || categories.length === 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      if (!categoriesScrollRef.current) return;
+      const container = categoriesScrollRef.current;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      if (maxScroll <= 4) return;
+
+      const isNegativeRtl = container.scrollLeft < 0;
+      const current = Math.abs(container.scrollLeft);
+
+      if (current >= maxScroll - 2) {
+        container.scrollLeft = 0;
+      } else {
+        const next = current + 1;
+        container.scrollLeft = isNegativeRtl ? -next : next;
+      }
+    }, 30);
+
+    return () => window.clearInterval(timer);
+  }, [isAutoScrollingCategories, categories.length]);
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    setIsAutoScrollingCategories(false);
+    const el = categoriesScrollRef.current;
+    if (!el) return;
+    const offset = direction === 'right' ? 240 : -240;
+    el.scrollBy({ left: offset, behavior: 'smooth' });
+  };
+
+  const handleCategoryNavigate = (slugOrId: string) => {
+    if (!slugOrId) {
+      setSelectedCategorySlug('');
+      navigate('/products');
+      return;
+    }
+    setSelectedCategorySlug(slugOrId);
+    navigate(`/products?category=${encodeURIComponent(slugOrId)}`);
+  };
 
   const toggleFavorite = (product: HomeProduct, e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -174,7 +251,8 @@ const StorefrontHome: React.FC = () => {
       result = result.filter(
         (p) =>
           (p.category?.slug || '').toLowerCase() ===
-          selectedCategorySlug.toLowerCase()
+            selectedCategorySlug.toLowerCase() ||
+          String(p.category?.id ?? '') === String(selectedCategorySlug)
       );
     }
 
@@ -244,50 +322,118 @@ const StorefrontHome: React.FC = () => {
     return extracted.length > 0 ? extracted : defaultBrands;
   }, [featuredProducts, newArrivals, onSaleProducts]);
 
+  const productsPageLink = selectedCategorySlug
+    ? `/products?category=${encodeURIComponent(selectedCategorySlug)}`
+    : '/products';
+
   return (
     <main className="max-w-6xl mx-auto px-4 md:px-8 space-y-8 pt-2 pb-6">
-      {/* 1. شريط الفئات الدائرية */}
-      <section aria-label="الفئات" className="pt-1">
-        <div className="flex items-center justify-between md:justify-center gap-3 sm:gap-6 overflow-x-auto no-scrollbar py-1">
-          {categories.map((cat) => {
-            const isSelected = selectedCategorySlug === cat.slug;
-            const imgUrl =
-              resolveHomeMediaUrl(cat.image) ||
-              categoryFallbackImages[cat.slug.toLowerCase()] ||
-              categoryFallbackImages.women;
+      {/* 1. شريط الفئات الدائرية المتحرك والسلس */}
+      <section
+        aria-label="الفئات"
+        onMouseEnter={() => setIsAutoScrollingCategories(false)}
+        onMouseLeave={() => setIsAutoScrollingCategories(true)}
+        className="pt-1 space-y-2"
+      >
+        <div className="relative flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => scrollCategories('right')}
+            aria-label="تمرير التصنيفات يميناً"
+            className="hidden sm:flex w-8 h-8 rounded-full bg-surface border border-brand-neutral/80 shadow-xs hover:border-brand hover:text-brand items-center justify-center shrink-0 transition-all active:scale-95 cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
 
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() =>
-                  setSelectedCategorySlug(isSelected ? '' : cat.slug)
-                }
-                className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
+          <div
+            ref={categoriesScrollRef}
+            onTouchStart={() => setIsAutoScrollingCategories(false)}
+            className="flex-1 flex items-center justify-start gap-3.5 sm:gap-6 overflow-x-auto no-scrollbar py-2 px-1"
+          >
+            {/* خيار الكل */}
+            <button
+              type="button"
+              onClick={() => handleCategoryNavigate('')}
+              className={`flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-all duration-300 ${
+                selectedCategorySlug === ''
+                  ? '-translate-y-1'
+                  : 'hover:-translate-y-1'
+              }`}
+            >
+              <div
+                className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md flex items-center justify-center ${
+                  selectedCategorySlug === ''
+                    ? 'ring-2 ring-brand bg-brand text-surface scale-105 shadow-md'
+                    : 'ring-1 ring-brand-neutral bg-surface text-brand-ink'
+                }`}
               >
-                <div
-                  className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-transform group-hover:scale-105 ${
-                    isSelected
-                      ? 'ring-2 ring-brand bg-brand/10'
-                      : 'ring-1 ring-brand-neutral'
+                <LayoutGrid className="w-6 h-6" />
+              </div>
+              <span
+                className={`text-[11px] md:text-xs font-medium transition-colors duration-200 ${
+                  selectedCategorySlug === ''
+                    ? 'text-brand font-bold'
+                    : 'text-brand-charcoal group-hover:text-brand'
+                }`}
+              >
+                الكل
+              </span>
+            </button>
+
+            {categories.map((cat, idx) => {
+              const filterKey = cat.slug || String(cat.id);
+              const isSelected = selectedCategorySlug === filterKey;
+              const imgUrl =
+                resolveHomeMediaUrl(cat.image) ||
+                categoryFallbackImages[(cat.slug || '').toLowerCase()] ||
+                categoryFallbackImages.women;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleCategoryNavigate(filterKey)}
+                  style={{ transitionDelay: `${Math.min(idx, 6) * 20}ms` }}
+                  className={`flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-all duration-300 ${
+                    isSelected ? '-translate-y-1' : 'hover:-translate-y-1'
                   }`}
                 >
-                  <img
-                    src={imgUrl}
-                    alt={cat.name}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
-                <span
-                  className={`text-[11px] md:text-xs font-medium ${
-                    isSelected ? 'text-brand font-bold' : 'text-brand-charcoal'
-                  }`}
-                >
-                  {categoryArabicLabels[cat.slug.toLowerCase()] ?? cat.name}
-                </span>
-              </button>
-            );
-          })}
+                  <div
+                    className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md ${
+                      isSelected
+                        ? 'ring-2 ring-brand bg-brand/15 scale-105 shadow-md'
+                        : 'ring-1 ring-brand-neutral bg-surface'
+                    }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={cat.name}
+                      className="w-full h-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                  </div>
+                  <span
+                    className={`text-[11px] md:text-xs font-medium transition-colors duration-200 ${
+                      isSelected
+                        ? 'text-brand font-bold'
+                        : 'text-brand-charcoal group-hover:text-brand'
+                    }`}
+                  >
+                    {categoryArabicLabels[(cat.slug || '').toLowerCase()] ??
+                      cat.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => scrollCategories('left')}
+            aria-label="تمرير التصنيفات يساراً"
+            className="hidden sm:flex w-8 h-8 rounded-full bg-surface border border-brand-neutral/80 shadow-xs hover:border-brand hover:text-brand items-center justify-center shrink-0 transition-all active:scale-95 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
         </div>
       </section>
 
@@ -512,27 +658,30 @@ const StorefrontHome: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. قسم منتجات جديدة */}
-      <ProductCarouselSection
-        title="منتجات جديدة"
-        products={filteredNewArrivals}
-        onSelectProduct={(id) => navigate(`/products/${id}`)}
-      />
+      {/* أقسام المنتجات */}
+      <div id="products-showcase" className="scroll-mt-6 space-y-8">
+        <ProductCarouselSection
+          title="منتجات جديدة"
+          products={filteredNewArrivals}
+          moreHref={productsPageLink}
+          onSelectProduct={(id) => navigate(`/products/${id}`)}
+        />
 
-      {/* 6. قسم منتجات الأكثر مشاهدة */}
-      <ProductCarouselSection
-        title="منتجات الأكثر مشاهدة 🔥"
-        products={filteredFeatured}
-        onSelectProduct={(id) => navigate(`/products/${id}`)}
-      />
+        <ProductCarouselSection
+          title="منتجات الأكثر مشاهدة 🔥"
+          products={filteredFeatured}
+          moreHref={productsPageLink}
+          onSelectProduct={(id) => navigate(`/products/${id}`)}
+        />
 
-      {/* 7. قسم المنتجات المخفضة */}
-      <ProductCarouselSection
-        title="المنتجات المخفضة"
-        products={filteredOnSale}
-        showDiscountBadge
-        onSelectProduct={(id) => navigate(`/products/${id}`)}
-      />
+        <ProductCarouselSection
+          title="المنتجات المخفضة"
+          products={filteredOnSale}
+          moreHref={productsPageLink}
+          showDiscountBadge
+          onSelectProduct={(id) => navigate(`/products/${id}`)}
+        />
+      </div>
 
       {/* 8. قسم الماركات */}
       <section className="space-y-3 pb-4">
@@ -564,6 +713,7 @@ const StorefrontHome: React.FC = () => {
 interface ProductCarouselSectionProps {
   title: string;
   products: HomeProduct[];
+  moreHref: string;
   showDiscountBadge?: boolean;
   onSelectProduct: (id: string) => void;
 }
@@ -571,6 +721,7 @@ interface ProductCarouselSectionProps {
 const ProductCarouselSection: React.FC<ProductCarouselSectionProps> = ({
   title,
   products,
+  moreHref,
   showDiscountBadge = false,
   onSelectProduct,
 }) => {
@@ -581,11 +732,12 @@ const ProductCarouselSection: React.FC<ProductCarouselSectionProps> = ({
           {title}
         </h2>
         <Link
-          to="/products"
-          aria-label={`عرض المزيد من ${title}`}
-          className="text-brand-charcoal hover:text-brand transition-colors"
+          to={moreHref}
+          aria-label={`المزيد من ${title}`}
+          className="inline-flex items-center gap-1 text-xs md:text-sm font-semibold text-brand hover:underline transition-colors"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <span>المزيد</span>
+          <ChevronLeft className="w-4 h-4" />
         </Link>
       </div>
 

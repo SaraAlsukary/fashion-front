@@ -1,42 +1,64 @@
 import { api } from '../api';
 
-export type ShopApprovalDecision = 'APPROVED' | 'REJECTED';
-
-export interface ShopData {
+export interface ShopEntity {
     id: string | number;
+    owner_id?: string | number;
     name: string;
-    description?: string;
-    phone?: string;
-    email?: string;
-    logo?: string;
-    coverImage?: string;
-    status?: string;
+    description?: string | null;
+    logo?: string | null;
+    cover_image?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    facebook_url?: string | null;
+    instagram_url?: string | null;
+    whatsapp_url?: string | null;
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | string;
+    rejection_reason?: string | null;
+    approved_at?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    owner?: {
+        id?: string | number;
+        name?: string;
+        email?: string;
+        phone?: string;
+    };
+    _count?: {
+        products?: number;
+        branches?: number;
+        orders?: number;
+        reviews?: number;
+    };
 }
 
 export interface UpdateMyShopPayload {
     name?: string;
-    description?: string;
-    phone?: string;
-    email?: string;
-    logo?: string;
-    coverImage?: string;
+    description?: string | null;
+    logo?: string | null;
+    cover_image?: string | null;
+    coverImage?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    facebook_url?: string | null;
+    instagram_url?: string | null;
+    whatsapp_url?: string | null;
 }
 
 export interface ListPendingShopsParams {
-    status?: string;
     page?: number;
     limit?: number;
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | string;
+    search?: string;
 }
 
 export interface ShopDecisionPayload {
-    decision: ShopApprovalDecision;
+    status: 'APPROVED' | 'REJECTED';
+    rejection_reason?: string;
     rejectionReason?: string;
 }
 
-export interface ShopApiResponse<T> {
-    success?: boolean;
-    message?: string;
-    data: T;
+export interface ShopsAdminListResponse {
+    shops: ShopEntity[];
     meta?: {
         page: number;
         limit: number;
@@ -45,86 +67,78 @@ export interface ShopApiResponse<T> {
     };
 }
 
-interface ApiErrorLike {
-    message?: string;
-    response?: {
-        status?: number;
-        data?: {
-            message?: string;
-            error?: string;
-        };
-    };
-}
+const extractShop = (payload: unknown): ShopEntity | null => {
+    if (!payload || typeof payload !== 'object') return null;
+    const p = payload as Record<string, unknown>;
 
-const normalizeError = (error: unknown, fallbackMessage: string): Error => {
-    const err = error as ApiErrorLike;
-    const status = err?.response?.status;
-    const serverMessage =
-        err?.response?.data?.message ??
-        err?.response?.data?.error ??
-        err?.message;
-
-    if (status === 403) {
-        return new Error(serverMessage || 'ليس لديك صلاحية للوصول إلى هذا الإجراء.');
+    if (p.shop && typeof p.shop === 'object') return p.shop as ShopEntity;
+    if (p.data && typeof p.data === 'object') {
+        const data = p.data as Record<string, unknown>;
+        if (data.shop && typeof data.shop === 'object') return data.shop as ShopEntity;
+        return data as unknown as ShopEntity;
     }
 
-    if (status === 404) {
-        return new Error(serverMessage || 'المتجر المطلوب غير موجود.');
+    return p as unknown as ShopEntity;
+};
+
+const extractShopsList = (payload: unknown): ShopsAdminListResponse => {
+    if (Array.isArray(payload)) {
+        return { shops: payload as ShopEntity[] };
+    }
+    if (!payload || typeof payload !== 'object') {
+        return { shops: [] };
     }
 
-    return new Error(serverMessage || fallbackMessage);
+    const p = payload as Record<string, unknown>;
+    const meta = p.meta as ShopsAdminListResponse['meta'] | undefined;
+
+    if (Array.isArray(p.data)) {
+        return { shops: p.data as ShopEntity[], meta };
+    }
+    if (Array.isArray(p.shops)) {
+        return { shops: p.shops as ShopEntity[], meta };
+    }
+    if (p.data && typeof p.data === 'object') {
+        const data = p.data as Record<string, unknown>;
+        const list = data.shops ?? data.items ?? data.data;
+        if (Array.isArray(list)) {
+            return { shops: list as ShopEntity[], meta };
+        }
+    }
+
+    return { shops: [], meta };
 };
 
 export const shopService = {
-    // --- متجر صاحب المتجر (Shop Owner) ---
-    getMyShop: async (): Promise<ShopApiResponse<ShopData>> => {
-        try {
-            const res = await api.get('/api/v1/shop-owner/shop');
-            return res.data;
-        } catch (error) {
-            throw normalizeError(error, 'تعذر جلب بيانات المتجر');
-        }
+    getMyShop: async (): Promise<ShopEntity | null> => {
+        const res = await api.get('/api/v1/shops/me');
+        return extractShop(res.data);
     },
 
-    updateMyShop: async (data: UpdateMyShopPayload): Promise<ShopApiResponse<ShopData>> => {
-        try {
-            const res = await api.patch('/api/v1/shop-owner/shop', data);
-            return res.data;
-        } catch (error) {
-            throw normalizeError(error, 'فشل تحديث بيانات المتجر');
-        }
+    updateMyShop: async (data: UpdateMyShopPayload): Promise<ShopEntity | null> => {
+        const res = await api.patch('/api/v1/shops/me', data);
+        return extractShop(res.data);
     },
 
-    // --- مراجعة وتأكيد المتاجر (Admin Shop Approvals) ---
     listShops: async (
-        params: ListPendingShopsParams = { status: 'PENDING', page: 1, limit: 10 }
-    ): Promise<ShopApiResponse<ShopData[]>> => {
-        try {
-            const res = await api.get('/api/v1/admin/shops', { params });
-            return res.data;
-        } catch (error) {
-            throw normalizeError(error, 'تعذر جلب قائمة المتاجر');
-        }
+        params?: ListPendingShopsParams
+    ): Promise<ShopsAdminListResponse> => {
+        const res = await api.get('/api/v1/admin/shops', { params });
+        return extractShopsList(res.data);
     },
 
     decideShopApproval: async (
         shopId: string | number,
         data: ShopDecisionPayload
-    ): Promise<ShopApiResponse<ShopData>> => {
-        try {
-            const res = await api.patch(`/api/v1/admin/shops/${shopId}/decision`, data);
-            return res.data;
-        } catch (error) {
-            throw normalizeError(error, 'فشل تسجيل قرار المتجر');
-        }
+    ): Promise<ShopEntity | null> => {
+        const res = await api.patch(`/api/v1/admin/shops/${shopId}/decision`, data);
+        return extractShop(res.data);
     },
 
-    retryDecisionEmail: async (shopId: string | number): Promise<ShopApiResponse<null>> => {
-        try {
-            const res = await api.post(`/api/v1/admin/shops/${shopId}/decision-email`);
-            return res.data;
-        } catch (error) {
-            throw normalizeError(error, 'فشل إعادة إرسال بريد قرار المتجر');
-        }
+    retryDecisionEmail: async (shopId: string | number): Promise<unknown> => {
+        const res = await api.post(
+            `/api/v1/admin/shops/${shopId}/retry-decision-email`
+        );
+        return res.data;
     },
 };
