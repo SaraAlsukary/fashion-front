@@ -208,10 +208,10 @@ const StorefrontHome: React.FC = () => {
     const firstVariant = product.variants?.[0];
     const resolvedPrice = Number(
       firstVariant?.sale_price ??
-        product.sale_price ??
-        firstVariant?.price ??
-        product.price ??
-        0
+      product.sale_price ??
+      firstVariant?.price ??
+      product.price ??
+      0
     );
 
     addToCart(
@@ -251,7 +251,7 @@ const StorefrontHome: React.FC = () => {
       result = result.filter(
         (p) =>
           (p.category?.slug || '').toLowerCase() ===
-            selectedCategorySlug.toLowerCase() ||
+          selectedCategorySlug.toLowerCase() ||
           String(p.category?.id ?? '') === String(selectedCategorySlug)
       );
     }
@@ -354,27 +354,24 @@ const StorefrontHome: React.FC = () => {
             <button
               type="button"
               onClick={() => handleCategoryNavigate('')}
-              className={`flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-all duration-300 ${
-                selectedCategorySlug === ''
-                  ? '-translate-y-1'
-                  : 'hover:-translate-y-1'
-              }`}
+              className={`flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-all duration-300 ${selectedCategorySlug === ''
+                ? '-translate-y-1'
+                : 'hover:-translate-y-1'
+                }`}
             >
               <div
-                className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md flex items-center justify-center ${
-                  selectedCategorySlug === ''
-                    ? 'ring-2 ring-brand bg-brand text-surface scale-105 shadow-md'
-                    : 'ring-1 ring-brand-neutral bg-surface text-brand-ink'
-                }`}
+                className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md flex items-center justify-center ${selectedCategorySlug === ''
+                  ? 'ring-2 ring-brand bg-brand text-surface scale-105 shadow-md'
+                  : 'ring-1 ring-brand-neutral bg-surface text-brand-ink'
+                  }`}
               >
                 <LayoutGrid className="w-6 h-6" />
               </div>
               <span
-                className={`text-[11px] md:text-xs font-medium transition-colors duration-200 ${
-                  selectedCategorySlug === ''
-                    ? 'text-brand font-bold'
-                    : 'text-brand-charcoal group-hover:text-brand'
-                }`}
+                className={`text-[11px] md:text-xs font-medium transition-colors duration-200 ${selectedCategorySlug === ''
+                  ? 'text-brand font-bold'
+                  : 'text-brand-charcoal group-hover:text-brand'
+                  }`}
               >
                 الكل
               </span>
@@ -394,29 +391,27 @@ const StorefrontHome: React.FC = () => {
                   type="button"
                   onClick={() => handleCategoryNavigate(filterKey)}
                   style={{ transitionDelay: `${Math.min(idx, 6) * 20}ms` }}
-                  className={`flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-all duration-300 ${
-                    isSelected ? '-translate-y-1' : 'hover:-translate-y-1'
-                  }`}
+                  className={`flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer transition-all duration-300 ${isSelected ? '-translate-y-1' : 'hover:-translate-y-1'
+                    }`}
                 >
                   <div
-                    className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md ${
-                      isSelected
-                        ? 'ring-2 ring-brand bg-brand/15 scale-105 shadow-md'
-                        : 'ring-1 ring-brand-neutral bg-surface'
-                    }`}
+                    className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md ${isSelected
+                      ? 'ring-2 ring-brand bg-brand/15 scale-105 shadow-md'
+                      : 'ring-1 ring-brand-neutral bg-surface'
+                      }`}
                   >
                     <img
+                      crossOrigin="anonymous"
                       src={imgUrl}
                       alt={cat.name}
                       className="w-full h-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
                   <span
-                    className={`text-[11px] md:text-xs font-medium transition-colors duration-200 ${
-                      isSelected
-                        ? 'text-brand font-bold'
-                        : 'text-brand-charcoal group-hover:text-brand'
-                    }`}
+                    className={`text-[11px] md:text-xs font-medium transition-colors duration-200 ${isSelected
+                      ? 'text-brand font-bold'
+                      : 'text-brand-charcoal group-hover:text-brand'
+                      }`}
                   >
                     {categoryArabicLabels[(cat.slug || '').toLowerCase()] ??
                       cat.name}
@@ -476,6 +471,7 @@ const StorefrontHome: React.FC = () => {
           <div className="md:col-span-5 flex items-center justify-center">
             <div className="relative w-full max-w-xs aspect-[4/3] rounded-2xl overflow-hidden border-2 border-surface/25 shadow-xl bg-brand-dark">
               <img
+                crossOrigin="anonymous"
                 src={
                   featuredProducts[0]
                     ? getProductPrimaryImage(featuredProducts[0])
@@ -561,9 +557,8 @@ const StorefrontHome: React.FC = () => {
                       className="self-end w-7 h-7 rounded-lg border border-surface/40 bg-surface/10 hover:bg-surface/20 flex items-center justify-center transition-colors cursor-pointer"
                     >
                       <Heart
-                        className={`w-4 h-4 ${
-                          isFav ? 'fill-surface text-surface' : 'text-surface'
-                        }`}
+                        className={`w-4 h-4 ${isFav ? 'fill-surface text-surface' : 'text-surface'
+                          }`}
                       />
                     </button>
 
@@ -571,6 +566,7 @@ const StorefrontHome: React.FC = () => {
                       <img
                         src={getProductPrimaryImage(product)}
                         alt={product.name}
+                        crossOrigin="anonymous"
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -627,11 +623,11 @@ const StorefrontHome: React.FC = () => {
           {(featuredShops.length > 0
             ? featuredShops
             : [
-                { id: '1', name: 'Atelier North' },
-                { id: '2', name: 'Veloura House' },
-                { id: '3', name: 'سبور شيك' },
-                { id: '4', name: 'ZARA Store' },
-              ]
+              { id: '1', name: 'Atelier North' },
+              { id: '2', name: 'Veloura House' },
+              { id: '3', name: 'سبور شيك' },
+              { id: '4', name: 'ZARA Store' },
+            ]
           )
             .slice(0, 4)
             .map((shop) => {
@@ -758,6 +754,7 @@ const ProductCarouselSection: React.FC<ProductCarouselSectionProps> = ({
             >
               <img
                 src={img}
+                crossOrigin="anonymous"
                 alt={item.name}
                 className="w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
               />

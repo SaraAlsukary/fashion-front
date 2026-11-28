@@ -8,8 +8,9 @@ export interface AuthUser {
   email?: string;
   phone?: string;
   role?: string;
+  status?: string;
+  email_verified_at?: string | null;
 }
-
 interface MePayloadLike extends AuthUser {
   user?: AuthUser;
   data?: AuthUser & { user?: AuthUser };

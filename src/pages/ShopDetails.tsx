@@ -116,7 +116,7 @@ const ShopDetails: React.FC = () => {
       comment: commentInput.trim(),
     });
   };
-useEffect(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [resolvedId]);
   return (
@@ -163,6 +163,7 @@ useEffect(() => {
           <section className="rounded-2xl border border-gray-200 bg-surface overflow-hidden shadow-2xs">
             <div className="relative h-44 md:h-56 bg-brand-soft">
               <img
+                crossOrigin="anonymous"
                 src={shop.cover_image || fallbackCover}
                 alt={shop.name}
                 className="w-full h-full object-cover"
@@ -174,6 +175,7 @@ useEffect(() => {
               <div className="flex items-start gap-4">
                 <div className="w-20 h-20 -mt-14 md:-mt-16 rounded-2xl border-4 border-surface bg-surface shadow-md overflow-hidden shrink-0">
                   <img
+                    crossOrigin="anonymous"
                     src={shop.logo || fallbackLogo}
                     alt={shop.name}
                     className="w-full h-full object-cover"
@@ -232,11 +234,10 @@ useEffect(() => {
           <button
             type="button"
             onClick={() => setActiveTab('branches')}
-            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'branches'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-surface text-gray-700 border border-gray-300 hover:border-brand'
-            }`}
+            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'branches'
+              ? 'bg-brand text-white shadow-xs'
+              : 'bg-surface text-gray-700 border border-gray-300 hover:border-brand'
+              }`}
           >
             <GitBranch className="w-4 h-4" />
             <span>الفروع ({branches.length})</span>
@@ -245,11 +246,10 @@ useEffect(() => {
           <button
             type="button"
             onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'products'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-surface text-gray-700 border border-gray-300 hover:border-brand'
-            }`}
+            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'products'
+              ? 'bg-brand text-white shadow-xs'
+              : 'bg-surface text-gray-700 border border-gray-300 hover:border-brand'
+              }`}
           >
             <Package className="w-4 h-4" />
             <span>المنتجات ({products.length})</span>
@@ -258,11 +258,10 @@ useEffect(() => {
           <button
             type="button"
             onClick={() => setActiveTab('reviews')}
-            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'reviews'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-surface text-gray-700 border border-gray-300 hover:border-brand'
-            }`}
+            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'reviews'
+              ? 'bg-brand text-white shadow-xs'
+              : 'bg-surface text-gray-700 border border-gray-300 hover:border-brand'
+              }`}
           >
             <MessageSquare className="w-4 h-4" />
             <span>التقييمات ({reviews.length})</span>
@@ -292,6 +291,7 @@ useEffect(() => {
                     className="rounded-2xl border border-gray-200 bg-surface p-4 flex flex-col sm:flex-row gap-4 shadow-2xs"
                   >
                     <img
+                      crossOrigin="anonymous"
                       src={branch.image || fallbackCover}
                       alt={branch.name}
                       className="w-full sm:w-36 h-32 rounded-xl object-cover shrink-0"
@@ -361,6 +361,7 @@ useEffect(() => {
                     >
                       <div className="h-44 bg-brand-soft/40 overflow-hidden">
                         <img
+                          crossOrigin="anonymous"
                           src={primaryImage}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -430,11 +431,10 @@ useEffect(() => {
                         className="p-1 cursor-pointer"
                       >
                         <Star
-                          className={`w-6 h-6 ${
-                            active
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'text-gray-300'
-                          }`}
+                          className={`w-6 h-6 ${active
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-gray-300'
+                            }`}
                         />
                       </button>
                     );
@@ -498,11 +498,10 @@ useEffect(() => {
                         {Array.from({ length: 5 }).map((_, idx) => (
                           <Star
                             key={idx}
-                            className={`w-3.5 h-3.5 ${
-                              idx < rev.rating
-                                ? 'fill-amber-400 text-amber-400'
-                                : 'text-gray-300'
-                            }`}
+                            className={`w-3.5 h-3.5 ${idx < rev.rating
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-gray-300'
+                              }`}
                           />
                         ))}
                       </div>

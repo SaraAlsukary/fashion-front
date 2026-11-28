@@ -97,7 +97,7 @@ const StorefrontHeader: React.FC<StorefrontHeaderProps> = ({
     const getDashboardRoute = () => {
         if (role === 'ADMIN') return '/admin';
         if (role === 'SHOP_OWNER') return '/market';
-        return '/profile';
+        return '/customer';
     };
 
     const getDashboardLabel = () => {

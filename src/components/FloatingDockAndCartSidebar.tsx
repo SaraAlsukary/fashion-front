@@ -340,6 +340,7 @@ const FloatingDockAndCartSidebar: React.FC<FloatingDockAndCartSidebarProps> = ({
                                                         </button>
 
                                                         <img
+                                                            crossOrigin="anonymous"
                                                             src={item.image}
                                                             alt={item.name}
                                                             className="w-14 h-18 rounded-xl object-cover bg-surface-muted shrink-0"

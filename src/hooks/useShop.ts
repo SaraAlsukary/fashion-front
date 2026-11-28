@@ -5,6 +5,10 @@ import {
     type ListPendingShopsParams,
     type ShopDecisionPayload,
 } from '../services/market/shopService';
+import {
+    shopsService,
+    type CreateShopRequestInput,
+} from '../services/shopsService'; // عدّل المسار حسب مكان الملف في مشروعك
 
 export const shopKeys = {
     all: ['shops'] as const,
@@ -20,10 +24,23 @@ export const useMyShop = () => {
     });
 };
 
+export const useCreateShopRequest = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: FormData | CreateShopRequestInput) =>
+            shopsService.createShopRequest(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: shopKeys.myShop() });
+            queryClient.invalidateQueries({ queryKey: shopKeys.all });
+        },
+    });
+};
+
 export const useUpdateMyShop = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: UpdateMyShopPayload) => shopService.updateMyShop(data),
+        mutationFn: (data: UpdateMyShopPayload | FormData) =>
+            shopService.updateMyShop(data as any),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: shopKeys.myShop() });
         },

@@ -546,6 +546,7 @@ const MarketProducts: React.FC = () => {
 
           <div className="border border-gray-200 rounded-xl p-3 bg-white flex items-center justify-center">
             <img
+              crossOrigin="anonymous"
               src={images[activePreviewIdx] ?? defaultDressImage}
               alt="معاينة المنتج"
               className="h-44 object-contain rounded-lg"
@@ -562,6 +563,7 @@ const MarketProducts: React.FC = () => {
                     }`}
                 >
                   <img
+                    crossOrigin="anonymous"
                     src={img}
                     alt={`صورة ${idx + 1}`}
                     className="w-full h-full object-cover rounded"
@@ -744,6 +746,7 @@ const MarketProducts: React.FC = () => {
                   </div>
 
                   <img
+                    crossOrigin="anonymous"
                     src={imgs[0]}
                     alt={prod.name}
                     className="w-20 h-24 rounded-xl object-cover shrink-0 border border-gray-200"
@@ -869,6 +872,7 @@ const MarketProducts: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {getProductImages(viewingProduct).map((img, i) => (
                   <img
+                    crossOrigin="anonymous"
                     key={i}
                     src={img}
                     alt={`${viewingProduct.name} ${i + 1}`}

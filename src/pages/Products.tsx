@@ -14,39 +14,6 @@ import {
   type HomeProduct,
 } from '../services/homeService';
 
-const categoryFallbackImages: Record<string, string> = {
-  women:
-    'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=240&q=80',
-  men:
-    'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=240&q=80',
-  dresses:
-    'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=240&q=80',
-  bags:
-    'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=240&q=80',
-  shoes:
-    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=240&q=80',
-  accessories:
-    'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=240&q=80',
-  jackets:
-    'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=240&q=80',
-  casual:
-    'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=240&q=80',
-  formal:
-    'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=240&q=80',
-};
-
-const categoryArabicLabels: Record<string, string> = {
-  women: 'نسائي',
-  men: 'رجالي',
-  dresses: 'فساتين',
-  bags: 'حقائب',
-  shoes: 'أحذية',
-  accessories: 'إكسسوارات',
-  jackets: 'جاكيتات',
-  casual: 'كاجوال',
-  formal: 'رسمي',
-};
-
 const getProductPrimaryImage = (product: HomeProduct): string => {
   const sorted = [...(product.images ?? [])].sort((a, b) => {
     if (a.is_primary && !b.is_primary) return -1;
@@ -59,7 +26,25 @@ const getProductPrimaryImage = (product: HomeProduct): string => {
     'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80'
   );
 };
+const categoryArabicLabels: Record<string, string> = {
+  women: 'نسائي',
+  men: 'رجالي',
+  kids: 'أطفال',
+  accessories: 'إكسسوارات',
+  shoes: 'أحذية',
+  bags: 'حقائب',
+};
 
+const categoryFallbackImages: Record<string, string> = {
+  women:
+    'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=300&q=80',
+  men:
+    'https://images.unsplash.com/photo-1516826957135-700dedea698c?auto=format&fit=crop&w=300&q=80',
+  kids:
+    'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=300&q=80',
+  accessories:
+    'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?auto=format&fit=crop&w=300&q=80',
+};
 const StorefrontProducts: React.FC = () => {
   const navigate = useNavigate();
   const outletCtx = useStorefrontContext();
@@ -198,16 +183,16 @@ const StorefrontProducts: React.FC = () => {
     e.stopPropagation();
     const matchingVariant = selectedSize
       ? product.variants?.find(
-          (v) => (v.size?.name || '').toUpperCase() === selectedSize.toUpperCase()
-        )
+        (v) => (v.size?.name || '').toUpperCase() === selectedSize.toUpperCase()
+      )
       : product.variants?.[0];
 
     const resolvedPrice = Number(
       matchingVariant?.sale_price ??
-        product.sale_price ??
-        matchingVariant?.price ??
-        product.price ??
-        0
+      product.sale_price ??
+      matchingVariant?.price ??
+      product.price ??
+      0
     );
 
     addToCart(
@@ -285,20 +270,18 @@ const StorefrontProducts: React.FC = () => {
             className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group"
           >
             <div
-              className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-105 ${
-                selectedCategorySlug === ''
-                  ? 'bg-brand text-surface ring-2 ring-brand ring-offset-2'
-                  : 'bg-brand-neutral/70 text-brand-ink'
-              }`}
+              className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-105 ${selectedCategorySlug === ''
+                ? 'bg-brand text-surface ring-2 ring-brand ring-offset-2'
+                : 'bg-brand-neutral/70 text-brand-ink'
+                }`}
             >
               الكل
             </div>
             <span
-              className={`text-[11px] md:text-xs font-medium ${
-                selectedCategorySlug === ''
-                  ? 'text-brand font-bold'
-                  : 'text-brand-charcoal'
-              }`}
+              className={`text-[11px] md:text-xs font-medium ${selectedCategorySlug === ''
+                ? 'text-brand font-bold'
+                : 'text-brand-charcoal'
+                }`}
             >
               جميع الأقسام
             </span>
@@ -323,22 +306,21 @@ const StorefrontProducts: React.FC = () => {
                 className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group"
               >
                 <div
-                  className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-transform group-hover:scale-105 ${
-                    isSelected
-                      ? 'ring-2 ring-brand ring-offset-2 bg-brand/10'
-                      : 'ring-1 ring-brand-neutral'
-                  }`}
+                  className={`w-14 h-14 md:w-16 md:h-16 rounded-full p-0.5 transition-transform group-hover:scale-105 ${isSelected
+                    ? 'ring-2 ring-brand ring-offset-2 bg-brand/10'
+                    : 'ring-1 ring-brand-neutral'
+                    }`}
                 >
                   <img
+                    crossOrigin="anonymous"
                     src={imgUrl}
                     alt={cat.name}
                     className="w-full h-full rounded-full object-cover"
                   />
                 </div>
                 <span
-                  className={`text-[11px] md:text-xs font-medium ${
-                    isSelected ? 'text-brand font-bold' : 'text-brand-charcoal'
-                  }`}
+                  className={`text-[11px] md:text-xs font-medium ${isSelected ? 'text-brand font-bold' : 'text-brand-charcoal'
+                    }`}
                 >
                   {categoryArabicLabels[cat.slug.toLowerCase()] ?? cat.name}
                 </span>
@@ -381,11 +363,10 @@ const StorefrontProducts: React.FC = () => {
                     setSelectedSize(active ? '' : sz);
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
-                    active
-                      ? 'bg-brand text-surface border-brand'
-                      : 'border-gray-200 text-gray-700 hover:border-brand'
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${active
+                    ? 'bg-brand text-surface border-brand'
+                    : 'border-gray-200 text-gray-700 hover:border-brand'
+                    }`}
                 >
                   {sz}
                 </button>
@@ -400,11 +381,10 @@ const StorefrontProducts: React.FC = () => {
             onClick={() =>
               setPriceSort(priceSort === 'asc' ? 'none' : 'asc')
             }
-            className={`px-3 py-1.5 rounded-xl border font-medium transition-colors cursor-pointer ${
-              priceSort === 'asc'
-                ? 'bg-brand text-surface border-brand'
-                : 'border-gray-200 text-gray-700 hover:border-brand'
-            }`}
+            className={`px-3 py-1.5 rounded-xl border font-medium transition-colors cursor-pointer ${priceSort === 'asc'
+              ? 'bg-brand text-surface border-brand'
+              : 'border-gray-200 text-gray-700 hover:border-brand'
+              }`}
           >
             الأرخص أولاً
           </button>
@@ -413,11 +393,10 @@ const StorefrontProducts: React.FC = () => {
             onClick={() =>
               setPriceSort(priceSort === 'desc' ? 'none' : 'desc')
             }
-            className={`px-3 py-1.5 rounded-xl border font-medium transition-colors cursor-pointer ${
-              priceSort === 'desc'
-                ? 'bg-brand text-surface border-brand'
-                : 'border-gray-200 text-gray-700 hover:border-brand'
-            }`}
+            className={`px-3 py-1.5 rounded-xl border font-medium transition-colors cursor-pointer ${priceSort === 'desc'
+              ? 'bg-brand text-surface border-brand'
+              : 'border-gray-200 text-gray-700 hover:border-brand'
+              }`}
           >
             الأغلى أولاً
           </button>
@@ -488,15 +467,15 @@ const StorefrontProducts: React.FC = () => {
                     className="w-7 h-7 rounded-lg border border-surface/40 bg-surface/10 hover:bg-surface/20 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                   >
                     <Heart
-                      className={`w-4 h-4 ${
-                        isFav ? 'fill-surface text-surface' : 'text-surface'
-                      }`}
+                      className={`w-4 h-4 ${isFav ? 'fill-surface text-surface' : 'text-surface'
+                        }`}
                     />
                   </button>
                 </div>
 
                 <div className="my-2 h-28 sm:h-32 md:h-36 flex items-center justify-center overflow-hidden rounded-xl bg-surface/5">
                   <img
+                    crossOrigin="anonymous"
                     src={getProductPrimaryImage(product)}
                     alt={product.name}
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"

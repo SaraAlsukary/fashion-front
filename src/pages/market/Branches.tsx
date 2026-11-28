@@ -233,6 +233,7 @@ const Branches: React.FC = () => {
               >
                 {branchImage && (
                   <img
+                    crossOrigin="anonymous"
                     src={branchImage}
                     alt={branch.name}
                     className="w-full sm:w-44 h-44 sm:h-auto object-cover shrink-0"
@@ -250,11 +251,10 @@ const Branches: React.FC = () => {
                           type="button"
                           onClick={() => handleToggleStatus(branch)}
                           disabled={updateStatusMutation.isPending}
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer ${
-                            isInactive
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer ${isInactive
                               ? 'bg-gray-100 text-gray-600 border-gray-300'
                               : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          }`}
+                            }`}
                         >
                           {isInactive ? 'غير نشط' : 'نشط'}
                         </button>
@@ -431,8 +431,8 @@ const Branches: React.FC = () => {
                   {isSaving
                     ? 'جاري الحفظ...'
                     : editingBranch
-                    ? 'حفظ التعديلات'
-                    : 'إضافة الفرع'}
+                      ? 'حفظ التعديلات'
+                      : 'إضافة الفرع'}
                 </button>
               </div>
             </form>

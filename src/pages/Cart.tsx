@@ -165,11 +165,10 @@ const Cart: React.FC = () => {
                           type="button"
                           onClick={() => toggleCartItemSelected(item.key)}
                           aria-label={`تحديد ${item.name}`}
-                          className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors cursor-pointer ${
-                            item.selected
+                          className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors cursor-pointer ${item.selected
                               ? 'bg-brand border-brand text-surface'
                               : 'border-gray-300 bg-surface text-transparent'
-                          }`}
+                            }`}
                         >
                           <Check className="w-4 h-4 stroke-[2.5]" />
                         </button>
@@ -253,6 +252,7 @@ const Cart: React.FC = () => {
                         className="w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden bg-surface-muted border border-brand-neutral/60 shrink-0"
                       >
                         <img
+                          crossOrigin="anonymous"
                           src={item.image}
                           alt={item.name}
                           className="w-full h-full object-cover"

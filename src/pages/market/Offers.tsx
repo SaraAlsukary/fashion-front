@@ -280,11 +280,10 @@ const MarketOffers: React.FC = () => {
                 setStatusFilter(opt.value);
                 setPage(1);
               }}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                statusFilter === opt.value
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === opt.value
                   ? 'bg-brand text-white'
                   : 'bg-brand-soft text-brand hover:bg-brand/20'
-              }`}
+                }`}
             >
               {opt.label}
             </button>
@@ -361,19 +360,17 @@ const MarketOffers: React.FC = () => {
                   key={item.code}
                   type="button"
                   onClick={() => setDiscountType(item.code)}
-                  className={`py-2 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                    discountType === item.code
+                  className={`py-2 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer ${discountType === item.code
                       ? 'border-brand bg-brand-soft/40 text-brand'
                       : 'border-gray-300 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <span>{item.label}</span>
                   <span
-                    className={`w-3.5 h-3.5 rounded-full border ${
-                      discountType === item.code
+                    className={`w-3.5 h-3.5 rounded-full border ${discountType === item.code
                         ? 'bg-brand border-brand'
                         : 'border-gray-400'
-                    }`}
+                      }`}
                   />
                 </button>
               ))}
@@ -484,19 +481,17 @@ const MarketOffers: React.FC = () => {
                       key={idStr}
                       type="button"
                       onClick={() => toggleProductSelection(idStr)}
-                      className={`w-full px-3 py-2 rounded-lg border text-right flex items-center justify-between gap-2 text-xs transition-colors cursor-pointer ${
-                        isChecked
+                      className={`w-full px-3 py-2 rounded-lg border text-right flex items-center justify-between gap-2 text-xs transition-colors cursor-pointer ${isChecked
                           ? 'bg-brand-soft/50 border-brand text-gray-900 font-semibold'
                           : 'bg-surface border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <span
-                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                            isChecked
+                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isChecked
                               ? 'bg-brand border-brand text-white'
                               : 'border-gray-300 bg-surface'
-                          }`}
+                            }`}
                         >
                           {isChecked && <Check className="w-3 h-3" />}
                         </span>
@@ -581,6 +576,7 @@ const MarketOffers: React.FC = () => {
                       <div className="flex items-start gap-2.5">
                         {imgSrc && (
                           <img
+                            crossOrigin="anonymous"
                             src={imgSrc}
                             alt={offer.title}
                             className="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0"
@@ -593,10 +589,9 @@ const MarketOffers: React.FC = () => {
                               {offer.title}
                             </span>
                             <span
-                              className={`px-2 py-0.5 rounded-md border text-[10px] font-semibold ${
-                                statusBadgeStyles[effectiveStatus] ??
+                              className={`px-2 py-0.5 rounded-md border text-[10px] font-semibold ${statusBadgeStyles[effectiveStatus] ??
                                 'bg-gray-100 text-gray-700 border-gray-200'
-                              }`}
+                                }`}
                             >
                               {statusLabelMap[effectiveStatus] ?? effectiveStatus}
                             </span>

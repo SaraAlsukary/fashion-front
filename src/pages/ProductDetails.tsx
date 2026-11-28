@@ -320,6 +320,7 @@ const ProductDetails: React.FC = () => {
         <div className="lg:col-span-6 space-y-3">
           <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-surface-muted border border-brand-neutral/70 shadow-sm">
             <img
+              crossOrigin="anonymous"
               src={activeImageUrl}
               alt={product.name}
               onError={(e) => {
@@ -349,9 +350,8 @@ const ProductDetails: React.FC = () => {
                 className="w-10 h-10 rounded-full bg-surface/90 hover:bg-surface text-brand shadow-md flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
               >
                 <Heart
-                  className={`w-5 h-5 ${
-                    isFavorite ? 'fill-brand text-brand' : 'text-brand'
-                  }`}
+                  className={`w-5 h-5 ${isFavorite ? 'fill-brand text-brand' : 'text-brand'
+                    }`}
                 />
               </button>
 
@@ -378,13 +378,13 @@ const ProductDetails: React.FC = () => {
                     key={img.id}
                     type="button"
                     onClick={() => setSelectedImageIdx(idx)}
-                    className={`w-20 h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-brand ring-2 ring-brand/25 scale-[1.02]'
-                        : 'border-brand-neutral/70 opacity-75 hover:opacity-100'
-                    }`}
+                    className={`w-20 h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${isSelected
+                      ? 'border-brand ring-2 ring-brand/25 scale-[1.02]'
+                      : 'border-brand-neutral/70 opacity-75 hover:opacity-100'
+                      }`}
                   >
                     <img
+                      crossOrigin="anonymous"
                       src={thumbUrl}
                       alt={`${product.name} ${idx + 1}`}
                       onError={(e) => {
@@ -501,11 +501,10 @@ const ProductDetails: React.FC = () => {
                       key={col.id}
                       type="button"
                       onClick={() => handleSelectColor(col.id)}
-                      className={`px-3.5 py-2 rounded-xl border text-xs font-semibold inline-flex items-center gap-2 transition-all cursor-pointer ${
-                        selected
-                          ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20'
-                          : 'border-brand-neutral bg-surface text-brand-charcoal hover:border-brand/50'
-                      }`}
+                      className={`px-3.5 py-2 rounded-xl border text-xs font-semibold inline-flex items-center gap-2 transition-all cursor-pointer ${selected
+                        ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20'
+                        : 'border-brand-neutral bg-surface text-brand-charcoal hover:border-brand/50'
+                        }`}
                     >
                       <span
                         className="w-4 h-4 rounded-full border border-black/15 shrink-0"
@@ -543,11 +542,10 @@ const ProductDetails: React.FC = () => {
                       key={sz.id}
                       type="button"
                       onClick={() => handleSelectSize(sz.id)}
-                      className={`min-w-[48px] px-4 py-2 rounded-xl border text-xs md:text-sm font-bold transition-all cursor-pointer ${
-                        selected
-                          ? 'bg-brand text-surface border-brand shadow-xs'
-                          : 'bg-surface text-brand-ink border-brand-neutral hover:border-brand'
-                      }`}
+                      className={`min-w-[48px] px-4 py-2 rounded-xl border text-xs md:text-sm font-bold transition-all cursor-pointer ${selected
+                        ? 'bg-brand text-surface border-brand shadow-xs'
+                        : 'bg-surface text-brand-ink border-brand-neutral hover:border-brand'
+                        }`}
                     >
                       {sz.name}
                     </button>
@@ -573,11 +571,10 @@ const ProductDetails: React.FC = () => {
                         if (v.color?.id) setSelectedColorId(String(v.color.id));
                         if (v.size?.id) setSelectedSizeId(String(v.size.id));
                       }}
-                      className={`w-full px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-right transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-brand/5'
-                          : 'hover:bg-surface-muted/60'
-                      }`}
+                      className={`w-full px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-right transition-colors cursor-pointer ${isCurrent
+                        ? 'bg-brand/5'
+                        : 'hover:bg-surface-muted/60'
+                        }`}
                     >
                       <div className="flex items-center gap-2 font-semibold text-brand-ink">
                         <span
@@ -652,6 +649,7 @@ const ProductDetails: React.FC = () => {
           {shopCoverUrl && (
             <div className="h-32 sm:h-40 w-full overflow-hidden bg-brand-dark">
               <img
+                crossOrigin="anonymous"
                 src={shopCoverUrl}
                 alt={product.shop.name}
                 onError={(e) => {
@@ -667,6 +665,7 @@ const ProductDetails: React.FC = () => {
               <div className="flex items-center gap-3.5">
                 {shopLogoUrl ? (
                   <img
+                    crossOrigin="anonymous"
                     src={shopLogoUrl}
                     alt={product.shop.name}
                     onError={(e) => {
@@ -791,6 +790,7 @@ const ProductDetails: React.FC = () => {
                 >
                   <div className="h-32 sm:h-36 w-full rounded-xl overflow-hidden bg-surface/5 mb-2.5">
                     <img
+                      crossOrigin="anonymous"
                       src={relImg}
                       alt={item.name}
                       onError={(e) => {

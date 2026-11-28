@@ -99,6 +99,7 @@ const Favorites: React.FC = () => {
 
               <div className="my-2.5 h-28 sm:h-32 md:h-36 rounded-xl overflow-hidden bg-surface/5">
                 <img
+                  crossOrigin="anonymous"
                   src={item.image}
                   alt={item.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

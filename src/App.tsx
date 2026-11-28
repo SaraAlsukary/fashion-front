@@ -6,6 +6,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import MarketLayout from './layout/MarketLayout';
 import { StorefrontCartFavProvider } from './context/StorefrontCartFavContext';
+import ProfileLayout from './layout/CustomerLayout';
+import CustomerShopsTab from './pages/customer/CustomerShopsTab';
+import CustomerFavoritesTab from './pages/customer/CustomerFavoritesTab';
+import CustomerCartTab from './pages/customer/CustomerCartTab';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +63,11 @@ const MarketOrders = lazy(() => import('./pages/market/Orders'));
 const MarketProducts = lazy(() => import('./pages/market/Products'));
 const MarketSubscriptions = lazy(() => import('./pages/market/Subscriptions'));
 const CreateShop = lazy(() => import('./pages/market/CreateShop'));
+
+
+// Customer
+const CustomerProfileInfo = lazy(() => import('./pages/customer/CustomerProfileInfo'));
+
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[300px] w-full">
@@ -193,6 +202,30 @@ const router = createBrowserRouter([
         </LoginLayout>
       </WithSuspense>
     ),
+  },
+  {
+    path: '/customer',
+    element: <ProfileLayout />,
+    children: [
+      {
+        index: true,
+        element: <CustomerProfileInfo />,
+      },
+      {
+        path: 'orders',
+        element: <div>طلباتي</div>,
+      },
+      {
+        path: 'shops',
+        element: <CustomerShopsTab createShopPath="/create-shop" />,
+      },
+      { path: 'favorites', element: <CustomerFavoritesTab /> },
+      { path: 'cart', element: <CustomerCartTab /> },
+      {
+        path: 'settings',
+        element: <div>الإعدادات</div>,
+      },
+    ],
   },
   {
     path: '/market',

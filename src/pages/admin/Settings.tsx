@@ -101,11 +101,11 @@ const Settings: React.FC<SettingsProps> = ({
     label: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    { key: 'orders', label: 'الطلبات', icon: ClipboardList },
-    { key: 'notifications', label: 'الاشعارات', icon: Bell },
-    { key: 'markets', label: 'المتاجر', icon: Store },
-    { key: 'brands', label: 'العلامات التجارية', icon: Tag },
-  ];
+      { key: 'orders', label: 'الطلبات', icon: ClipboardList },
+      { key: 'notifications', label: 'الاشعارات', icon: Bell },
+      { key: 'markets', label: 'المتاجر', icon: Store },
+      { key: 'brands', label: 'العلامات التجارية', icon: Tag },
+    ];
 
   return (
     <div className="space-y-4">
@@ -184,6 +184,7 @@ const Settings: React.FC<SettingsProps> = ({
               <div className="w-20 h-20 rounded-full border-2 border-gray-800 bg-surface flex items-center justify-center overflow-hidden">
                 {avatarPreview ? (
                   <img
+                    crossOrigin="anonymous"
                     src={avatarPreview}
                     alt={name}
                     className="w-full h-full object-cover"

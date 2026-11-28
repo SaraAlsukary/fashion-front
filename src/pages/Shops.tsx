@@ -147,6 +147,7 @@ const Shops: React.FC = () => {
                 >
                   <div className="relative h-36 bg-brand-soft overflow-hidden">
                     <img
+                      crossOrigin="anonymous"
                       src={coverSrc}
                       alt={shop.name}
                       onError={(e) => {
@@ -158,6 +159,7 @@ const Shops: React.FC = () => {
 
                     <div className="absolute bottom-3 right-3 w-14 h-14 rounded-xl bg-surface border-2 border-surface shadow-md overflow-hidden flex items-center justify-center">
                       <img
+                        crossOrigin="anonymous"
                         src={logoSrc}
                         alt={shop.name}
                         onError={(e) => {

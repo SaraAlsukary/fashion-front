@@ -103,11 +103,10 @@ const Offers: React.FC = () => {
           <button
             type="button"
             onClick={() => setOnlyActive((prev) => !prev)}
-            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 border transition-colors cursor-pointer self-start sm:self-auto ${
-              onlyActive
+            className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold inline-flex items-center gap-2 border transition-colors cursor-pointer self-start sm:self-auto ${onlyActive
                 ? 'bg-brand text-white border-brand shadow-xs'
                 : 'bg-surface text-gray-700 border-gray-300 hover:border-brand'
-            }`}
+              }`}
           >
             <Sparkles className="w-4 h-4" />
             <span>العروض السارية فقط</span>
@@ -188,6 +187,7 @@ const Offers: React.FC = () => {
                 >
                   <div className="relative h-40 bg-brand-soft overflow-hidden">
                     <img
+                      crossOrigin="anonymous"
                       src={imgSrc}
                       alt={title}
                       onError={(e) => {
@@ -207,11 +207,10 @@ const Offers: React.FC = () => {
                     )}
 
                     <span
-                      className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                        active
+                      className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-semibold ${active
                           ? 'bg-emerald-500/90 text-white'
                           : 'bg-gray-800/80 text-gray-200'
-                      }`}
+                        }`}
                     >
                       {active ? 'ساري' : 'منتهٍ'}
                     </span>

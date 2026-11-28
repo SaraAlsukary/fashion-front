@@ -111,19 +111,19 @@ const extractShopsList = (payload: unknown): ShopsAdminListResponse => {
 
 export const shopService = {
     getMyShop: async (): Promise<ShopEntity | null> => {
-        const res = await api.get('/api/v1/shops/me');
+        const res = await api.get('/shops/me');
         return extractShop(res.data);
     },
 
     updateMyShop: async (data: UpdateMyShopPayload): Promise<ShopEntity | null> => {
-        const res = await api.patch('/api/v1/shops/me', data);
+        const res = await api.patch('/shops/me', data);
         return extractShop(res.data);
     },
 
     listShops: async (
         params?: ListPendingShopsParams
     ): Promise<ShopsAdminListResponse> => {
-        const res = await api.get('/api/v1/admin/shops', { params });
+        const res = await api.get('/admin/shops', { params });
         return extractShopsList(res.data);
     },
 
@@ -131,13 +131,13 @@ export const shopService = {
         shopId: string | number,
         data: ShopDecisionPayload
     ): Promise<ShopEntity | null> => {
-        const res = await api.patch(`/api/v1/admin/shops/${shopId}/decision`, data);
+        const res = await api.patch(`/admin/shops/${shopId}/decision`, data);
         return extractShop(res.data);
     },
 
     retryDecisionEmail: async (shopId: string | number): Promise<unknown> => {
         const res = await api.post(
-            `/api/v1/admin/shops/${shopId}/retry-decision-email`
+            `/admin/shops/${shopId}/retry-decision-email`
         );
         return res.data;
     },

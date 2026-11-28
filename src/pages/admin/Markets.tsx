@@ -323,11 +323,10 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
           type="button"
           disabled={mutating}
           onClick={() => void handleToggleVerify(market)}
-          className={`px-2.5 py-1 rounded-md text-xs font-semibold disabled:opacity-50 transition-colors cursor-pointer ${
-            market.isVerified
-              ? 'bg-sky-100 text-sky-800 hover:bg-sky-200'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
+          className={`px-2.5 py-1 rounded-md text-xs font-semibold disabled:opacity-50 transition-colors cursor-pointer ${market.isVerified
+            ? 'bg-sky-100 text-sky-800 hover:bg-sky-200'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
         >
           {market.isVerified ? 'إلغاء التوثيق' : 'توثيق'}
         </button>
@@ -397,11 +396,10 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
                 setStatusFilter(tab.key);
                 setPage(1);
               }}
-              className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium border transition-colors cursor-pointer ${
-                isSelected
-                  ? 'bg-brand text-white border-brand shadow-xs'
-                  : 'bg-surface text-gray-700 border-gray-300 hover:border-brand hover:text-brand'
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium border transition-colors cursor-pointer ${isSelected
+                ? 'bg-brand text-white border-brand shadow-xs'
+                : 'bg-surface text-gray-700 border-gray-300 hover:border-brand hover:text-brand'
+                }`}
             >
               {tab.label}
             </button>
@@ -463,9 +461,8 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
 
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-block min-w-[78px] px-3 py-1 rounded-md text-xs font-semibold ${
-                          statusBadgeClasses[market.statusLabel]
-                        }`}
+                        className={`inline-block min-w-[78px] px-3 py-1 rounded-md text-xs font-semibold ${statusBadgeClasses[market.statusLabel]
+                          }`}
                       >
                         {market.statusLabel}
                       </span>
@@ -526,11 +523,10 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
                 type="button"
                 disabled={loading}
                 onClick={() => setPage(p)}
-                className={`w-8 h-8 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${
-                  isCurrent
-                    ? 'bg-brand text-white border-brand'
-                    : 'bg-surface text-gray-800 border-gray-300 hover:border-brand'
-                }`}
+                className={`w-8 h-8 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${isCurrent
+                  ? 'bg-brand text-white border-brand'
+                  : 'bg-surface text-gray-800 border-gray-300 hover:border-brand'
+                  }`}
               >
                 {p}
               </button>
@@ -584,6 +580,7 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
               <div className="space-y-2">
                 {viewingMarket.coverImage && (
                   <img
+                    crossOrigin="anonymous"
                     src={viewingMarket.coverImage}
                     alt={`غلاف ${viewingMarket.name}`}
                     className="w-full h-32 object-cover rounded-lg border border-gray-200 bg-gray-100"
@@ -592,6 +589,7 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
                 <div className="flex items-center gap-3">
                   {viewingMarket.logo && (
                     <img
+                      crossOrigin="anonymous"
                       src={viewingMarket.logo}
                       alt={`شعار ${viewingMarket.name}`}
                       className="w-14 h-14 object-cover rounded-full border border-gray-200 bg-gray-100 shrink-0"
@@ -599,9 +597,8 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
                   )}
                   <div className="text-xs text-gray-600">
                     <span
-                      className={`inline-block px-2.5 py-0.5 rounded-md font-semibold ${
-                        statusBadgeClasses[viewingMarket.statusLabel]
-                      }`}
+                      className={`inline-block px-2.5 py-0.5 rounded-md font-semibold ${statusBadgeClasses[viewingMarket.statusLabel]
+                        }`}
                     >
                       {viewingMarket.statusLabel}
                     </span>
@@ -665,45 +662,45 @@ const MarketsContent: React.FC<MarketsContentProps> = ({
             {(viewingMarket.facebookUrl ||
               viewingMarket.instagramUrl ||
               viewingMarket.whatsappUrl) && (
-              <div className="pt-1 space-y-1.5 text-xs">
-                <p className="font-semibold text-gray-800">روابط التواصل الاجتماعي:</p>
-                <div className="flex flex-wrap gap-2">
-                  {viewingMarket.facebookUrl && (
-                    <a
-                      href={viewingMarket.facebookUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"
-                    >
-                      <span>Facebook</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                  {viewingMarket.instagramUrl && (
-                    <a
-                      href={viewingMarket.instagramUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-pink-50 text-pink-700 hover:bg-pink-100"
-                    >
-                      <span>Instagram</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                  {viewingMarket.whatsappUrl && (
-                    <a
-                      href={viewingMarket.whatsappUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                    >
-                      <span>WhatsApp</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
+                <div className="pt-1 space-y-1.5 text-xs">
+                  <p className="font-semibold text-gray-800">روابط التواصل الاجتماعي:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingMarket.facebookUrl && (
+                      <a
+                        href={viewingMarket.facebookUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"
+                      >
+                        <span>Facebook</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {viewingMarket.instagramUrl && (
+                      <a
+                        href={viewingMarket.instagramUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-pink-50 text-pink-700 hover:bg-pink-100"
+                      >
+                        <span>Instagram</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {viewingMarket.whatsappUrl && (
+                      <a
+                        href={viewingMarket.whatsappUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <span>WhatsApp</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* أزرار التحكم السريعة والإغلاق */}
             <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">

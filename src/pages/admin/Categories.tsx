@@ -414,11 +414,10 @@ const CategoriesContent: React.FC<CategoriesContentProps> = ({ searchQuery = '' 
                           type="button"
                           disabled={mutating}
                           onClick={() => void handleToggleStatus(category)}
-                          className={`px-2.5 py-1 rounded-md text-xs font-semibold disabled:opacity-50 transition-colors cursor-pointer ${
-                            category.isActive
-                              ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                              : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                          }`}
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold disabled:opacity-50 transition-colors cursor-pointer ${category.isActive
+                            ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                            }`}
                         >
                           {category.isActive ? 'تعطيل' : 'تفعيل'}
                         </button>
@@ -457,11 +456,10 @@ const CategoriesContent: React.FC<CategoriesContentProps> = ({ searchQuery = '' 
 
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-block min-w-[68px] px-3 py-1 rounded-md text-xs font-semibold ${
-                          category.isActive
-                            ? 'bg-emerald-100/90 text-emerald-700'
-                            : 'bg-rose-100/90 text-rose-600'
-                        }`}
+                        className={`inline-block min-w-[68px] px-3 py-1 rounded-md text-xs font-semibold ${category.isActive
+                          ? 'bg-emerald-100/90 text-emerald-700'
+                          : 'bg-rose-100/90 text-rose-600'
+                          }`}
                       >
                         {category.isActive ? 'نشطة' : 'معطلة'}
                       </span>
@@ -479,6 +477,7 @@ const CategoriesContent: React.FC<CategoriesContentProps> = ({ searchQuery = '' 
                       <div className="inline-flex items-center justify-center gap-2 text-gray-800 font-medium">
                         {category.image ? (
                           <img
+                            crossOrigin="anonymous"
                             src={category.image}
                             alt={category.name}
                             className="w-6 h-6 rounded-full object-cover border border-gray-300 shrink-0"
@@ -528,11 +527,10 @@ const CategoriesContent: React.FC<CategoriesContentProps> = ({ searchQuery = '' 
                 type="button"
                 disabled={loading}
                 onClick={() => setPage(p)}
-                className={`w-8 h-8 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${
-                  isCurrent
-                    ? 'bg-brand text-white border-brand'
-                    : 'bg-surface text-gray-800 border-gray-300 hover:border-brand'
-                }`}
+                className={`w-8 h-8 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${isCurrent
+                  ? 'bg-brand text-white border-brand'
+                  : 'bg-surface text-gray-800 border-gray-300 hover:border-brand'
+                  }`}
               >
                 {p}
               </button>
@@ -663,6 +661,7 @@ const CategoriesContent: React.FC<CategoriesContentProps> = ({ searchQuery = '' 
                 {previewUrl && (
                   <div className="mt-2">
                     <img
+                      crossOrigin="anonymous"
                       src={previewUrl}
                       alt="معاينة صورة الفئة"
                       className="w-24 h-24 object-cover rounded-lg border border-gray-200 bg-gray-100"
@@ -728,6 +727,7 @@ const CategoriesContent: React.FC<CategoriesContentProps> = ({ searchQuery = '' 
 
             {viewingCategory.image && (
               <img
+                crossOrigin="anonymous"
                 src={viewingCategory.image}
                 alt={viewingCategory.name}
                 className="w-full h-36 object-cover rounded-lg border border-gray-200 bg-gray-100"

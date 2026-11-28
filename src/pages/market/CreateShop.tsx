@@ -1,27 +1,58 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Store, Upload, CheckCircle2 } from 'lucide-react';
-import { useMyShop, useUpdateMyShop } from '../../hooks/useShop';
+import {
+    useMyShop,
+    useCreateShopRequest,
+    useUpdateMyShop,
+} from '../../hooks/useShop';
 
 const CreateShop: React.FC = () => {
     const navigate = useNavigate();
     const { data: myShopRes } = useMyShop();
+    const createShopRequestMutation = useCreateShopRequest();
     const updateShopMutation = useUpdateMyShop();
+
+    const isEditingExistingShop = Boolean(myShopRes?.data?.id);
+    const activeMutation = isEditingExistingShop
+        ? updateShopMutation
+        : createShopRequestMutation;
 
     const [formData, setFormData] = useState({
         name: '',
         description: '',
         phone: '',
         email: '',
-        logo: '',
-        coverImage: '',
     });
+
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+
+    const [logoPreview, setLogoPreview] = useState<string>('');
+    const [coverPreview, setCoverPreview] = useState<string>('');
+
+    const logoObjectUrlRef = useRef<string | null>(null);
+    const coverObjectUrlRef = useRef<string | null>(null);
 
     const [errors, setErrors] = useState({
         name: '',
         email: '',
     });
+
+    const revokeLogoPreview = () => {
+        if (logoObjectUrlRef.current) {
+            URL.revokeObjectURL(logoObjectUrlRef.current);
+            logoObjectUrlRef.current = null;
+        }
+    };
+
+    const revokeCoverPreview = () => {
+        if (coverObjectUrlRef.current) {
+            URL.revokeObjectURL(coverObjectUrlRef.current);
+            coverObjectUrlRef.current = null;
+        }
+    };
 
     useEffect(() => {
         const shop = myShopRes?.data;
@@ -31,38 +62,64 @@ const CreateShop: React.FC = () => {
                 description: shop.description || '',
                 phone: shop.phone || '',
                 email: shop.email || '',
-                logo: shop.logo || '',
-                coverImage: shop.coverImage || '',
             });
-        }
-    }, [myShopRes]);
 
-    const handleFileToDataUrl = (
+            if (!logoFile) {
+                revokeLogoPreview();
+                setLogoPreview(shop.logo || '');
+            }
+            if (!coverImageFile) {
+                revokeCoverPreview();
+                setCoverPreview(shop.coverImage || '');
+            }
+        }
+    }, [myShopRes, logoFile, coverImageFile]);
+
+    useEffect(() => {
+        return () => {
+            revokeLogoPreview();
+            revokeCoverPreview();
+        };
+    }, []);
+
+    const handleFileChange = (
         e: React.ChangeEvent<HTMLInputElement>,
         field: 'logo' | 'coverImage'
     ) => {
         const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (typeof reader.result === 'string') {
-                setFormData((prev) => ({ ...prev, [field]: reader.result as string }));
-            }
-        };
-        reader.readAsDataURL(file);
         e.target.value = '';
+        if (!file) return;
+
+        const objectUrl = URL.createObjectURL(file);
+
+        if (field === 'logo') {
+            revokeLogoPreview();
+            logoObjectUrlRef.current = objectUrl;
+            setLogoFile(file);
+            setLogoPreview(objectUrl);
+        } else {
+            revokeCoverPreview();
+            coverObjectUrlRef.current = objectUrl;
+            setCoverImageFile(file);
+            setCoverPreview(objectUrl);
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         const nextErrors = { name: '', email: '' };
-        if (!formData.name.trim()) {
+        const trimmedName = formData.name.trim();
+        const trimmedEmail = formData.email.trim();
+        const trimmedPhone = formData.phone.trim();
+        const trimmedDescription = formData.description.trim();
+
+        if (!trimmedName) {
             nextErrors.name = 'اسم المتجر مطلوب';
         }
-        if (formData.email.trim()) {
+        if (trimmedEmail) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email.trim())) {
+            if (!emailRegex.test(trimmedEmail)) {
                 nextErrors.email = 'صيغة البريد الإلكتروني غير صالحة';
             }
         }
@@ -72,18 +129,23 @@ const CreateShop: React.FC = () => {
             return;
         }
 
-        updateShopMutation.mutate(
-            {
-                name: formData.name.trim(),
-                description: formData.description.trim() || undefined,
-                phone: formData.phone.trim() || undefined,
-                email: formData.email.trim() || undefined,
-                logo: formData.logo.trim() || undefined,
-                coverImage: formData.coverImage.trim() || undefined,
-            },
+        const payload = new FormData();
+        payload.append('name', trimmedName);
+        if (trimmedDescription) payload.append('description', trimmedDescription);
+        if (trimmedPhone) payload.append('phone', trimmedPhone);
+        if (trimmedEmail) payload.append('email', trimmedEmail);
+        if (logoFile) payload.append('logo', logoFile);
+        if (coverImageFile) payload.append('coverImage', coverImageFile);
+
+        activeMutation.mutate(
+            payload as unknown as Parameters<typeof activeMutation.mutate>[0],
             {
                 onSuccess: () => {
-                    toast.success('تم حفظ بيانات المتجر وإرسالها للمراجعة');
+                    toast.success(
+                        isEditingExistingShop
+                            ? 'تم تحديث بيانات المتجر بنجاح'
+                            : 'تم إرسال طلب إنشاء المتجر للمراجعة بنجاح'
+                    );
                     navigate('/market');
                 },
                 onError: (err) => {
@@ -125,8 +187,9 @@ const CreateShop: React.FC = () => {
                             setFormData({ ...formData, name: e.target.value });
                             if (errors.name) setErrors({ ...errors, name: '' });
                         }}
-                        className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-200/70 border rounded-full text-center text-gray-800 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-[#6b1d37] transition-all ${errors.name ? 'border-red-500' : 'border-transparent'
-                            }`}
+                        className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-200/70 border rounded-full text-center text-gray-800 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-[#6b1d37] transition-all ${
+                            errors.name ? 'border-red-500' : 'border-transparent'
+                        }`}
                     />
                     {errors.name && (
                         <span className="text-red-500 text-[11px] mt-0.5 block text-center">
@@ -144,8 +207,9 @@ const CreateShop: React.FC = () => {
                             setFormData({ ...formData, email: e.target.value });
                             if (errors.email) setErrors({ ...errors, email: '' });
                         }}
-                        className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-200/70 border rounded-full text-center text-gray-800 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-[#6b1d37] transition-all ${errors.email ? 'border-red-500' : 'border-transparent'
-                            }`}
+                        className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-200/70 border rounded-full text-center text-gray-800 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-[#6b1d37] transition-all ${
+                            errors.email ? 'border-red-500' : 'border-transparent'
+                        }`}
                     />
                     {errors.email && (
                         <span className="text-red-500 text-[11px] mt-0.5 block text-center">
@@ -185,13 +249,14 @@ const CreateShop: React.FC = () => {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => handleFileToDataUrl(e, 'logo')}
+                                onChange={(e) => handleFileChange(e, 'logo')}
                                 className="hidden"
                             />
                         </label>
-                        {formData.logo ? (
+                        {logoPreview ? (
                             <img
-                                src={formData.logo}
+                                crossOrigin="anonymous"
+                                src={logoPreview}
                                 alt="شعار المتجر"
                                 className="w-12 h-12 object-cover rounded-xl border border-gray-200 bg-white"
                             />
@@ -207,13 +272,14 @@ const CreateShop: React.FC = () => {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => handleFileToDataUrl(e, 'coverImage')}
+                                onChange={(e) => handleFileChange(e, 'coverImage')}
                                 className="hidden"
                             />
                         </label>
-                        {formData.coverImage ? (
+                        {coverPreview ? (
                             <img
-                                src={formData.coverImage}
+                                crossOrigin="anonymous"
+                                src={coverPreview}
                                 alt="غلاف المتجر"
                                 className="w-full h-12 object-cover rounded-xl border border-gray-200 bg-white"
                             />
@@ -233,12 +299,12 @@ const CreateShop: React.FC = () => {
                     </button>
                     <button
                         type="submit"
-                        disabled={updateShopMutation.isPending}
+                        disabled={activeMutation.isPending}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-full bg-[#6b1d37] hover:bg-[#52162a] disabled:opacity-60 text-white text-xs md:text-sm font-semibold shadow-md transition-colors cursor-pointer"
                     >
                         <CheckCircle2 className="w-4 h-4" />
                         <span>
-                            {updateShopMutation.isPending
+                            {activeMutation.isPending
                                 ? 'جاري الحفظ...'
                                 : 'حفظ وإرسال للمراجعة'}
                         </span>

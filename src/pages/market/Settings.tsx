@@ -201,8 +201,8 @@ const MarketSettings: React.FC<MarketSettingsProps> = ({
         setExistingLogoUrl(updatedRes.data.logo || existingLogoUrl);
         setExistingCoverUrl(
           updatedRes.data.cover_image ||
-            updatedRes.data.coverImage ||
-            existingCoverUrl
+          updatedRes.data.coverImage ||
+          existingCoverUrl
         );
       }
       setLogoFile(null);
@@ -246,11 +246,11 @@ const MarketSettings: React.FC<MarketSettingsProps> = ({
     label: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    { key: 'orders', label: 'الطلبات', icon: ClipboardList },
-    { key: 'notifications', label: 'الاشعارات', icon: Bell },
-    { key: 'markets', label: 'المتاجر', icon: Store },
-    { key: 'brands', label: 'العلامات التجارية', icon: Tag },
-  ];
+      { key: 'orders', label: 'الطلبات', icon: ClipboardList },
+      { key: 'notifications', label: 'الاشعارات', icon: Bell },
+      { key: 'markets', label: 'المتاجر', icon: Store },
+      { key: 'brands', label: 'العلامات التجارية', icon: Tag },
+    ];
 
   const brandHeading = storeName.trim() || initialData?.logoText || 'ZARA';
   const activeLogoSrc = logoPreview || existingLogoUrl;
@@ -528,6 +528,7 @@ const MarketSettings: React.FC<MarketSettingsProps> = ({
                 <label className="flex flex-col items-center justify-center gap-1.5 px-3 py-3 border border-dashed border-gray-300 hover:border-brand rounded-lg bg-surface cursor-pointer transition-colors text-center">
                   {activeLogoSrc ? (
                     <img
+                      crossOrigin="anonymous"
                       src={activeLogoSrc}
                       alt="معاينة الشعار"
                       className="w-14 h-14 object-cover rounded-md border border-gray-200"
@@ -566,6 +567,7 @@ const MarketSettings: React.FC<MarketSettingsProps> = ({
                 <label className="flex flex-col items-center justify-center gap-1.5 px-3 py-3 border border-dashed border-gray-300 hover:border-brand rounded-lg bg-surface cursor-pointer transition-colors text-center">
                   {activeCoverSrc ? (
                     <img
+                      crossOrigin="anonymous"
                       src={activeCoverSrc}
                       alt="معاينة الغلاف"
                       className="w-full h-14 object-cover rounded-md border border-gray-200"

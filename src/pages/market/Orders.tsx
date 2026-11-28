@@ -198,11 +198,10 @@ const MarketOrders: React.FC = () => {
               setActiveTab(tab.key);
               setPage(1);
             }}
-            className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-colors cursor-pointer ${
-              activeTab === tab.key
-                ? 'bg-brand text-white'
-                : 'bg-brand-soft text-brand hover:bg-brand/20'
-            }`}
+            className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-colors cursor-pointer ${activeTab === tab.key
+              ? 'bg-brand text-white'
+              : 'bg-brand-soft text-brand hover:bg-brand/20'
+              }`}
           >
             {tab.label}
           </button>
@@ -257,11 +256,10 @@ const MarketOrders: React.FC = () => {
                   key={orderId}
                   type="button"
                   onClick={() => setSelectedId(orderId)}
-                  className={`w-full text-right p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-pointer ${
-                    isSelected
-                      ? 'bg-surface border-brand shadow-xs'
-                      : 'bg-surface border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`w-full text-right p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-pointer ${isSelected
+                    ? 'bg-surface border-brand shadow-xs'
+                    : 'bg-surface border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-gray-900">
@@ -280,6 +278,7 @@ const MarketOrders: React.FC = () => {
 
                   {items[0]?.imageUrl && (
                     <img
+                      crossOrigin="anonymous"
                       src={items[0].imageUrl}
                       alt={numberText}
                       className="w-16 h-20 rounded-xl object-cover shrink-0 border border-gray-200"
@@ -347,8 +346,8 @@ const MarketOrders: React.FC = () => {
                     <p className="text-xs text-gray-500 mt-0.5">
                       {formatOrderDate(
                         activeOrder.created_at ??
-                          activeOrder.createdAt ??
-                          activeOrder.date
+                        activeOrder.createdAt ??
+                        activeOrder.date
                       )}
                     </p>
                   </div>
@@ -398,6 +397,7 @@ const MarketOrders: React.FC = () => {
                         </div>
                         {item.imageUrl && (
                           <img
+                            crossOrigin="anonymous"
                             src={item.imageUrl}
                             alt={item.title}
                             className="w-16 h-20 rounded-lg object-cover shrink-0"
